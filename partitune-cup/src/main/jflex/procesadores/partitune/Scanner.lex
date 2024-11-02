@@ -14,7 +14,8 @@ import procesadores.partitune.sym;
 
 %state COMMENT
 
-%standalone
+/*%standalone*/
+%int
 /*
 %cup
 */
