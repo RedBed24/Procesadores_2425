@@ -1,0 +1,34 @@
+/* Declaracion de fragmentos*/ 
+
+/* define un fragmento cuyo nombre es "simple" */ 
+fragmento simple { 
+   /* no incluye atribuciones */ 
+   { 
+   /* bloque de notas a tocar */ 
+      n(FA) 
+   } 
+} 
+
+fragmento intro { 
+    /* incluye atribuciones a compás y armadura */ 
+    compas = 2/4   
+    armadura = b SOL b SOL 
+    compas = 3/4 
+    { 
+        n(RE MI_) /* secuencia */ 
+        Simple /* llamada al fragmento simple */ 
+        lig { sc (FA' SOL' LA') } /* ligadura */ 
+        |: n (DO' re' MI') c (FA' %SOL') :| /* repetición */ 
+    } 
+} 
+ 
+/* creación de la obra con nombre "Las Cuatro Estaciones" */ 
+obra "Las Cuatro Estaciones" { 
+      compas = 3/44
+      clave = SOL 
+    { 
+        /*
+        intro 
+        f (DO' RE' MI') sc (FA' SOL' LA') 
+    } 
+}
