@@ -4,6 +4,7 @@ package procesadores.partitune;
 import java_cup.runtime.Symbol;
 import procesadores.partitune.sym;
 */
+import procesadores.partitune.Utility;
 
 %%
 
@@ -25,36 +26,40 @@ import procesadores.partitune.sym;
 
 %%
 <YYINITIAL> {
-fragmento { System.out.print("token fragmento"); }
-obra { System.out.print("token obra"); }
-clave { System.out.print("token clave"); }
-compas { System.out.print("token compas"); }
-armadura { System.out.print("token armadura"); }
-lig { System.out.print("token ligadura"); }
-DO | RE | MI | FA | SOL | LA | SI { System.out.printf("nota %s", yytext()); }
-sf | f | sc | c | n | bl | r { System.out.printf("duracion %s", yytext()); }
-2\/4 | 3\/4 | 4\/4 | 6\/8 { System.out.print("duracion compas"); }
-b | # { System.out.print("modificador"); }
-' | _ { System.out.print("octava"); }
-\. { System.out.print("puntillo"); }
-\|: { System.out.print("inicio repetición"); }
-:\| { System.out.print("fin repetición"); }
-- { System.out.print("silencio"); }
-\% { System.out.print("becuadro"); }
-\{ { System.out.print("token {"); }
-\} { System.out.print("token }"); }
-\( { System.out.print("token ("); }
-\) { System.out.print("token )"); }
-= { System.out.print("token ="); }
-\"[^\"]*\" { System.out.printf("titulo %s", yytext()); }
-[a-zA-Z][a-zA-Z|0-9|_]* { System.out.printf("id: %s", yytext()); }
+[a-zA-Z][a-zA-Z|0-9|_]* {
+    if (Utility.isKeyWord(yytext())){
+        System.out.printf("%s %s\n", Utility.getTokenType(yytext()),yytext());
+    } else {
+        System.out.printf("identificador %s\n", yytext());
+    }
+}
+2\/4 | 3\/4 | 4\/4 | 6\/8 {
+    Utility.Compas compas = Utility.getCompasType(yytext());
+    System.out.print("compas reconocido\n");
+}
+[0-9]*\/[0-9]* {System.out.println(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_COMPAS_DURATION_ERROR]);}
+# { System.out.println("sostenido"); }
+' | _ { System.out.println("octava"); }
+\. { System.out.println("puntillo"); }
+\|: { System.out.println("inicio repetición"); }
+:\| { System.out.println("fin repetición"); }
+- { System.out.println("silencio"); }
+\% { System.out.println("becuadro"); }
+\{ { System.out.println("token {"); }
+\} { System.out.println("token }"); }
+\( { System.out.println("token ("); }
+\) { System.out.println("token )"); }
+= { System.out.println("token ="); }
+\"[^\"]*\" { System.out.printf("titulo %s\n", yytext()); }
+\"[.|\n|\t]* { System.out.println(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_UNFINISHED_TITLE]); } // error título
 \/\* { yybegin(COMMENT); }
-\n | \t | \r {}
-. {}
+" " | \n | \t | \r {}
+. { System.out.println(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_UNKNOWN_ERROR]); }
 }
 
 <COMMENT> {
 \*\/ { yybegin(YYINITIAL); }
 \n | \t | \r {}
+<<EOF>> { System.out.printf(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_COMMENT_ERROR]); yybegin(YYINITIAL); }
 . {}
 }
