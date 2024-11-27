@@ -1,11 +1,12 @@
 from antlr4 import *
 from Scanner import Scanner
+import sys
 
 def main():
     # Input arithmetic expression
 
     # Create input stream
-    input_stream = FileStream("test.txt")
+    input_stream = FileStream(sys.argv[1])
 
     # Create the lexer
     lexer = Scanner(input_stream)
