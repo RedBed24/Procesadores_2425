@@ -14,9 +14,10 @@ L_CORCHETE : '{';
 R_CORCHETE : '}';
 L_PARENTESIS : '(';
 R_PARENTESIS : ')';
-IGUAL : '=';
-// BEMOL : 'b' ;
-PALABRA: [A-Za-z]+;
+IGUAL: '=';
+BEMOL: 'b';
+NOTA: 'do' | 're';
+PALABRA: ~BEMOL ~NOTA [A-Za-z]+;
 
 TITULO: '"' (~["\\] | '\\' .)* '"';
 TITULO_ERROR: '"'[.\n\t]'*';
@@ -28,8 +29,5 @@ WS : [ \t\n\r]+ -> skip;
 //////////
 mode COMMENT_MODE;
 END_COMMENT: '*/' -> popMode;
-WS_C : [ \t\n\r]+ -> skip;
 NADA :. -> skip;
-// \n | \t | \r {}
-// <<EOF>> { System.out.printf(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_COMMENT_ERROR]); yybegin(YYINITIAL); }
-// . {}
+FIN: EOF;
