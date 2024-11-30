@@ -28,12 +28,12 @@ FRAGMENTO: 'fragmento';
 LIGADURA: 'lig';
 ARMADURA: 'armadura';
 ID: [a-z]+; // blas -> b como bemol y las palabra, debería ser: blas como palabra
-// en parser, necesitamos token FRAGMENTO, aquí no aparece...
-// no podemos tener un reconocedor de "palabra"
+// en parser, necesitamos token FRAGMENTO, aquí no aparece... no podemos tener un reconocedor de
+// "palabra" " el personaje \"pepito\" "
 TITULO: '"' (~["])* '"';
-TITULO_ERROR: '"' [.\n\r\t]* { print(f"Error: Titulo no cerrado, linea {self.line}, columna {self.column}") } -> skip;
+TITULO_ERROR: '"' [.\n\r\t]* {print(f"Error: Titulo no cerrado, linea {self.line}, columna {self.column}");}->skip;
 
 COMMENT: '/*' .*? '*/' -> skip;
-BAD_COMMENT: '/*' .*? { print(f"ERROR: Comentario sin cerrar, linea {self.line}, columna {self.column}") } -> skip;
+BAD_COMMENT: '/*' .*? {print(f"ERROR: Comentario sin cerrar, linea {self.line}, columna {self.column}")} -> skip;
 WS: [ \t\n\r]+ -> skip;
 

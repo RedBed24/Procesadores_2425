@@ -1,12 +1,11 @@
-import os
 import sys
 
 from antlr4 import *
 from antlr4.tree.Trees import Trees
 from graphviz import Digraph
 
-from Parser import Parser
-from Scanner import Scanner
+from .analysis.Parser import Parser  # type: ignore
+from .analysis.Scanner import Scanner  # type: ignore
 
 
 # Para visualización gráfica
@@ -46,10 +45,10 @@ def main():
     # Crear representación en Graphviz
     graph = Digraph(format='png')
     graph.attr(rankdir='TB')  # Dirección de top-bottom
-    
+
     # Construir el árbol
     build_tree(parser, tree, graph)
-    
+
     # Renderizar el grafo
     output_file = "parse_tree"
     graph.render(output_file, view=True)
