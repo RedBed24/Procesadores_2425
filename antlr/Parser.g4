@@ -4,7 +4,7 @@ options {
 	tokenVocab = Scanner;
 }
 
-partitura: fragmento* obra;
+partitura: fragmento* obra EOF;
 obra: OBRA TITULO LLAVE_IZQ especificacion* bloque_notas LLAVE_DER;
 
 especificacion: (clave | compas | armadura);
