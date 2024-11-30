@@ -1,21 +1,21 @@
 lexer grammar Scanner;
 
 options {
-    caseInsensitive = true;
+	caseInsensitive = true;
 }
 
-COMPAS_DURACION : '2/4' | '3/4' | '4/4' | '6/8';
-SOSTENIDO : '#';
-PUNTILLO : '.';
-OCTAVA : '\'' | '_';
-PRINCIPIO_REP : '|:';
-FINAL_REP : ':|';
-SILENCIO : '-';
-BECUADRO : '%';
-LLAVE_IZQ : '{';
-LLAVE_DER : '}';
-PARENTESIS_IZQ : '(';
-PARENTESIS_DER : ')';
+COMPAS_DURACION: '2/4' | '3/4' | '4/4' | '6/8';
+SOSTENIDO: '#';
+PUNTILLO: '.';
+OCTAVA: '\'' | '_';
+PRINCIPIO_REP: '|:';
+FINAL_REP: ':|';
+SILENCIO: '-';
+BECUADRO: '%';
+LLAVE_IZQ: '{';
+LLAVE_DER: '}';
+PARENTESIS_IZQ: '(';
+PARENTESIS_DER: ')';
 IGUAL: '=';
 BEMOL: 'b';
 NOTA_BASE: 'do' | 're' | 'mi' | 'fa' | 'sol' | 'la' | 'si';

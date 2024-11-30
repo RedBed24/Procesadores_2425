@@ -1,11 +1,13 @@
-from antlr4 import *
-from Scanner import Scanner
-from Parser import Parser
-from antlr4.tree.Trees import Trees
 import os
 import sys
 
+from antlr4 import *
+from antlr4.tree.Trees import Trees
 from graphviz import Digraph
+
+from Parser import Parser
+from Scanner import Scanner
+
 
 # Para visualización gráfica
 def build_tree(parser, node, graph, parent=None):
@@ -14,18 +16,19 @@ def build_tree(parser, node, graph, parent=None):
     """
     label = Trees.getNodeText(node, parser.ruleNames)  # Obtener etiqueta del nodo
     node_id = str(id(node))  # Identificador único para el nodo
-    
+
     # Agregar el nodo al grafo
     graph.node(node_id, label)
-    
+
     # Conectar con el nodo padre, si existe
     if parent:
         graph.edge(parent, node_id)
-    
+
     # Recorrer los hijos y construir el grafo
     if node.getChildCount() > 0:
         for child in node.getChildren():
             build_tree(parser, child, graph, node_id)
+
 
 def main():
     # Input arithmetic expression
