@@ -5,6 +5,7 @@ options {
 }
 
 COMPAS_DURACION: '2/4' | '3/4' | '4/4' | '6/8';
+COMPAS_DURATION_ERROR: [0-9]+ '/' [0-9]+ {print(f"ERROR: Duracion de compas no valida, linea {self.line}, columna {self.column}")};
 SOSTENIDO: '#';
 PUNTILLO: '.';
 OCTAVA: '\'' | '_';
@@ -29,16 +30,10 @@ ARMADURA: 'armadura';
 ID: [a-z]+; // blas -> b como bemol y las palabra, debería ser: blas como palabra
 // en parser, necesitamos token FRAGMENTO, aquí no aparece...
 // no podemos tener un reconocedor de "palabra"
+TITULO: '"' (~["])* '"';
+TITULO_ERROR: '"' [.\n\r\t]* { print(f"Error: Titulo no cerrado, linea {self.line}, columna {self.column}") } -> skip;
 
-TITULO: '"' (~["\\] | '\\' .)* '"';
-//TITULO_ERROR: '"'[.\n\t]'*';
+COMMENT: '/*' .*? '*/' -> skip;
+BAD_COMMENT: '/*' .*? { print(f"ERROR: Comentario sin cerrar, linea {self.line}, columna {self.column}") } -> skip;
+WS: [ \t\n\r]+ -> skip;
 
-BEGIN_COMMENT: '/*' -> pushMode(COMMENT_MODE), skip;
-WS : [ \t\n\r]+ -> skip;
-
-
-//////////
-mode COMMENT_MODE;
-END_COMMENT: '*/' -> popMode, skip;
-NADA :. -> skip;
-//FIN: EOF;
