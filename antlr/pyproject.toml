@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "Partitune"
+version = "0.0.1"
+authors = [
+  { name="Samuel Espejo Gil", email="samuel.espejo@alu.uclm.es" },
+  { name="Elena Ballesteros Morallón", email="elena.ballesteros2@alu.uclm.es" },
+  { name="Marcelo Chinarro Cabrero", email="marcelo.chinarro@alu.uclm.es" },
+  { name="Jorge Burgos Ortega", email="jorge.burgos1@alu.uclm.es" },
+]
+description = "Conversor Partitune a ABC"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "antlr4-python3-runtime==4.13.2",
+]
+
+[project.urls]
+"Repository" = "https://github.com/RedBed24/procesadores_2425"
+
+[tool.hatch.build.hooks.custom]
+path = "build_hooks.py"
+dependencies = [
+  "antlr4-tools==0.2.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[project.scripts]
+partitune = "src.python.main:main"
