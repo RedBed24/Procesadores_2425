@@ -21,6 +21,7 @@ classifiers = [
 ]
 dependencies = [
   "antlr4-python3-runtime==4.13.2",
+  "graphviz==0.20.3",
 ]
 
 [project.urls]
@@ -30,6 +31,7 @@ dependencies = [
 path = "build_hooks.py"
 dependencies = [
   "antlr4-tools==0.2.1",
+  "hatchling==1.26.3",
 ]
 
 [tool.hatch.build.targets.wheel]
