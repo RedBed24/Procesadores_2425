@@ -37,5 +37,12 @@ dependencies = [
 [tool.hatch.build.targets.wheel]
 packages = ["."]
 
+[tool.hatch.build.targets.wheel.hooks.custom]
+path = "build_hooks.py"
+dependencies = [
+  "antlr4-tools==0.2.1",
+  "hatchling==1.26.3",
+]
+
 [project.scripts]
 partitune = "src.python.main:main"
