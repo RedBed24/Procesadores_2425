@@ -1,5 +1,7 @@
 package procesadores.partitune;
 
+import procesadores.partitune.sym;
+
 class Utility {
     public static final String[] LEXER_ERROR_MESSAGES = {
         "Error: Comentario sin cerrar",
@@ -34,18 +36,6 @@ class Utility {
         "b",
     };
 
-    public enum TokenType {
-        FRAGMENTO,
-        OBRA,
-        CLAVE,
-        COMPAS,
-        ARMADURA,
-        LIG,
-        NOTA,
-        DURACION,
-        BEMOL;
-    }
-
     public enum Note {
         DO,
         RE,
@@ -75,20 +65,20 @@ class Utility {
         return false;
     }
 
-    public static TokenType getTokenType(String word) {
+    public static int getTokenType(String word) {
         switch (word.toLowerCase()) {
             case "fragmento":
-                return TokenType.FRAGMENTO;
+                return sym.FRAGMENTO;
             case "obra":
-                return TokenType.OBRA;
+                return sym.OBRA;
             case "clave":
-                return TokenType.CLAVE;
+                return sym.CLAVE;
             case "compas":
-                return TokenType.COMPAS;
+                return sym.COMPAS;
             case "armadura":
-                return TokenType.ARMADURA;
+                return sym.ARMADURA;
             case "lig":
-                return TokenType.LIG;
+                return sym.LIGADURA;
             case "do":
             case "re":
             case "mi":
@@ -96,7 +86,7 @@ class Utility {
             case "sol":
             case "la":
             case "si":
-                return TokenType.NOTA;
+                return sym.NOTA_BASE;
             case "sf":
             case "f":
             case "sc":
@@ -104,9 +94,9 @@ class Utility {
             case "n":
             case "bl":
             case "r":
-                return TokenType.DURACION;
+                return sym.DURACION;
             case "b":
-                return TokenType.BEMOL;
+                return sym.BEMOL;
             default:
                 throw new IllegalArgumentException(word);
         }

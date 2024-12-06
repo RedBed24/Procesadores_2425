@@ -27,57 +27,51 @@ import java.lang.Character;
 
 %%
 
-int {return new Symbol(sym.TIPO_DATO, yytext());} /// this
 
 <YYINITIAL> {
 [a-zA-Z][a-zA-Z|0-9]* {
         if (Utility.isKeyWord(yytext())){
-            System.out.printf("%s %s\n", Utility.getTokenType(yytext()),yytext());
-            //return new Symbol(sym
+            return new Symbol(Utility.getTokenType(yytext()), yytext());
         } else {
-            System.out.printf("identificador %s\n", yytext());
-            return new Symbol(sym.IDENTIFICADOR, yytext());
+            return new Symbol(sym.ID, yytext());
         }
 }
 2\/4 | 3\/4 | 4\/4 | 6\/8 {
     Utility.Compas compas = Utility.getCompasType(yytext());
-    System.out.printf("Tipo compas %s\n", yytext());
-    return new Symbol(sym.TIPO_COMPAS, compas);
+    return new Symbol(sym.COMPAS_DURACION, compas);
 }
 [0-9]*\/[0-9]* {System.out.println(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_COMPAS_DURATION_ERROR]);}
-# { System.out.println("sostenido"); 
-    return new Symbol(sym.SOSTENIDO, yytext());
+# { return new Symbol(sym.SOSTENIDO, yytext());
 }
-' | _ { System.out.println("octava");
-    return new Symbol(sym.OCTAVA, yytext());
+' | _ { return new Symbol(sym.OCTAVA, yytext());
  }
-\. { System.out.println("puntillo"); 
+\. { 
     return new Symbol(sym.PUNTILLO, yytext());
 }
-\|: { System.out.println("inicio repetición");
+\|: {
      return new Symbol(sym.PRINCIPIO_REP, yytext());}
-:\| { System.out.println("fin repetición"); 
+:\| { 
     return new Symbol(sym.FINAL_REP, yytext());}
-- { System.out.println("silencio"); 
+- { 
     return new Symbol(sym.SILENCIO, yytext());}
-\% { System.out.println("becuadro"); 
+\% {  
     return new Symbol(sym.BECUADRO, yytext());}
-\{ { System.out.println("token {"); 
+\{ { 
     return new Symbol(sym.LLAVE_IZQ, yytext());
 }
-\} { System.out.println("token }"); 
+\} {
     return new Symbol(sym.LLAVE_DER, yytext());
 }
-\( { System.out.println("token ("); 
+\( { 
     return new Symbol(sym.PARENTESIS_IZQ, yytext());
 }
-\) { System.out.println("token )"); 
+\) { 
     return new Symbol(sym.PARENTESIS_DER, yytext());
 }
-= { System.out.println("token ="); 
+= { 
     return new Symbol(sym.IGUAL, yytext());
 }
-\"[^\"]*\" { System.out.printf("titulo %s\n", yytext()); 
+\"[^\"]*\" {  
     return new Symbol(sym.TITULO, yytext());
 }
 \"[.|\n|\t]* { System.out.println(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_UNFINISHED_TITLE]); } // error título

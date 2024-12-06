@@ -7,10 +7,10 @@ parser code {:
  		FileInputStream stream = new java.io.FileInputStream(args[0]);
 		Reader reader = new InputStreamReader(stream);
 		try{
-			new parser(new Analizador(reader)).parse();
+			new parser(new Scanner(reader)).parse();
 		}
 		catch ( Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			System.out.println("\nAnálisis INCORRECTO !!");
 			System.exit(1);
 		}
@@ -22,7 +22,7 @@ parser code {:
 
 terminal OBRA, TITULO, LLAVE_IZQ, LLAVE_DER, CLAVE, IGUAL, NOTA_BASE, COMPAS, COMPAS_DURACION, ARMADURA, FRAGMENTO, ID, PRINCIPIO_REP, FINAL_REP, LIGADURA, DURACION, PARENTESIS_IZQ, SILENCIO, PARENTESIS_DER, BEMOL, SOSTENIDO, OCTAVA, PUNTILLO, BECUADRO;
 
-non terminal fragmento, obra, especificacion, clave, compas, armadura, notas_armadura, bloque_notas, elemento, repeticion, secuencia, ligadura, llamada, modificador, nota, lista_elementos, lista_secuencias, posible_principio_rep, silencio_nota, posible_modificador, lista_fragmentos, lista_especificaciones, partitura, posible_puntillo, bemol_sostenido, posible_octava;
+non terminal fragmento, obra, especificacion, clave, compas, armadura, notas_armadura, bloque_notas, elemento, repeticion, secuencia, ligadura, llamada, modificador, nota, lista_elementos, lista_secuencias, silencio_nota, posible_modificador, lista_fragmentos, lista_especificaciones, partitura, posible_puntillo, bemol_sostenido, posible_octava, posible_fin_rep;
 
 partitura::= lista_fragmentos obra;
 lista_fragmentos::= fragmento lista_fragmentos | ;
@@ -40,10 +40,10 @@ fragmento::= FRAGMENTO ID LLAVE_IZQ lista_especificaciones bloque_notas LLAVE_DE
 
 bloque_notas::= LLAVE_IZQ lista_elementos LLAVE_DER;
 lista_elementos::= elemento lista_elementos | elemento;
-elemento::= repeticion | secuencia | ligadura | llamada;
-repeticion::= posible_principio_rep lista_secuencias FINAL_REP;
+elemento::= repeticion | secuencia posible_fin_rep | ligadura | llamada;
+posible_fin_rep::= FINAL_REP | ;
+repeticion::= PRINCIPIO_REP lista_secuencias FINAL_REP;
 lista_secuencias ::= secuencia lista_secuencias | secuencia;
-posible_principio_rep::= PRINCIPIO_REP | ;
 ligadura::= LIGADURA LLAVE_IZQ lista_secuencias LLAVE_DER;
 llamada::= ID;
 secuencia::= DURACION PARENTESIS_IZQ silencio_nota PARENTESIS_DER;
