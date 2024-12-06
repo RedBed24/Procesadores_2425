@@ -4,15 +4,13 @@ import procesadores.partitune.sym;
 
 class Utility {
     public static final String[] LEXER_ERROR_MESSAGES = {
-        "Error: Comentario sin cerrar",
-        "Error: Caracter no reconocido",
-        "Error: Identificador no permitido",
-        "Error: Duracion de compas erronea",
-        "Error: Titulo incorrecto, faltan las comillas de cierre",
-        "Error: Error desconocido",
+        "Error: Comentario sin cerrar en línea %d columna %d\n",
+        "Error: Caracter no reconocido en línea %d columna %d\n",
+        "Error: Identificador no permitido en línea %d columna %d\n",
+        "Error: Duracion de compas erronea en línea %d columna %d\n",
+        "Error: Titulo incorrecto, faltan las comillas de cierre en línea %d columna %d\n",
+        "Error: Error desconocido en línea %d columna %d\n",
     };
-    // duración compás, es posible poner [0-9]+/[0-9]+, lo cual es un error si no son los valores correctos
-    // además, se puede encontrar un número a secas o separado [" " | \n | \t] del /, lo cual es un error
 
     public static final int LEXER_COMMENT_ERROR = 0;
     public static final int LEXER_UNRECOGNIZED_CHAR = 1;

@@ -11,10 +11,10 @@ parser code {:
 		}
 		catch ( Exception e) {
 			//e.printStackTrace();
-			System.out.println("\nAnálisis INCORRECTO !!");
+			System.out.println("\nError durante el analisis");
 			System.exit(1);
 		}
-		System.out.println("\nAnálisis Correcto ");
+		System.out.println("\nAnalisis finalizado");
 	}
 :}
 
@@ -26,12 +26,12 @@ non terminal fragmento, obra, especificacion, clave, compas, armadura, notas_arm
 
 partitura::= lista_fragmentos obra;
 lista_fragmentos::= fragmento lista_fragmentos | ;
-obra::= OBRA TITULO LLAVE_IZQ lista_especificaciones bloque_notas LLAVE_DER;
+obra::= OBRA TITULO LLAVE_IZQ lista_especificaciones bloque_notas LLAVE_DER | OBRA error;
 lista_especificaciones ::= especificacion lista_especificaciones | ;
 
 especificacion::= clave | compas | armadura;
 clave::= CLAVE IGUAL NOTA_BASE;
-compas::= COMPAS IGUAL COMPAS_DURACION;
+compas::= COMPAS IGUAL COMPAS_DURACION | COMPAS IGUAL error;
 armadura::= ARMADURA IGUAL notas_armadura;
 notas_armadura::= bemol_sostenido NOTA_BASE posible_octava notas_armadura | bemol_sostenido NOTA_BASE posible_octava;
 posible_octava::= OCTAVA | ;

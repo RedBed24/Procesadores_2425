@@ -40,7 +40,7 @@ import java.lang.Character;
     Utility.Compas compas = Utility.getCompasType(yytext());
     return new Symbol(sym.COMPAS_DURACION, compas);
 }
-[0-9]*\/[0-9]* {System.out.println(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_COMPAS_DURATION_ERROR]);}
+[0-9]*\/[0-9]* {System.out.printf(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_COMPAS_DURATION_ERROR], yyline, yycolumn);}
 # { return new Symbol(sym.SOSTENIDO, yytext());
 }
 ' | _ { return new Symbol(sym.OCTAVA, yytext());
@@ -74,15 +74,15 @@ import java.lang.Character;
 \"[^\"]*\" {  
     return new Symbol(sym.TITULO, yytext());
 }
-\"[.|\n|\t]* { System.out.println(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_UNFINISHED_TITLE]); } // error título
+\"[.|\n|\t]* { System.out.printf(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_UNFINISHED_TITLE], yyline, yycolumn); } // error título
 \/\* { yybegin(COMMENT); }
 " " | \n | \t | \r {}
-. { System.out.println(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_UNKNOWN_ERROR]); }
+. { System.out.printf(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_UNKNOWN_ERROR]); }
 }
 
 <COMMENT> {
 \*\/ { yybegin(YYINITIAL); }
 \n | \t | \r {}
-<<EOF>> { System.out.printf(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_COMMENT_ERROR]); yybegin(YYINITIAL); }
+<<EOF>> { System.out.printf(Utility.LEXER_ERROR_MESSAGES[Utility.LEXER_COMMENT_ERROR], yyline, yycolumn); yybegin(YYINITIAL); }
 . {}
 }
