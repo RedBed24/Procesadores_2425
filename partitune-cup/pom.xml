@@ -20,13 +20,13 @@
          <version>1.8.2</version>
      </dependency>
      <!-- https://mvnrepository.com/artifact/edu.princeton.cup/java-cup -->
-     <!--
+     
      <dependency>
          <groupId>edu.princeton.cup</groupId>
          <artifactId>java-cup</artifactId>
          <version>10k</version>
      </dependency>
-     -->
+    
   </dependencies>
 
   <build>
@@ -47,7 +47,7 @@
           </execution>
         </executions>
       </plugin>
-      <!--
+      
       <plugin>
         <groupId>com.github.vbmacher</groupId>
         <artifactId>cup-maven-plugin</artifactId>
@@ -64,7 +64,7 @@
           <cupDefinition>src/main/cup/procesadores/partitune/Parser.cup</cupDefinition>
         </configuration>
       </plugin>
-      -->
+     
 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -72,7 +72,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>procesadores.partitune.Main</mainClass>
+              <mainClass>procesadores.partitune.parser</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

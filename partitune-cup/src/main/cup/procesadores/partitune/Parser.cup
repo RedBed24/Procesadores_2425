@@ -1,1 +1,54 @@
 import procesadores.partitune.Scanner;
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+	public static void main(String args[]) throws Exception {
+ 		FileInputStream stream = new java.io.FileInputStream(args[0]);
+		Reader reader = new InputStreamReader(stream);
+		try{
+			new parser(new Scanner(reader)).parse();
+		}
+		catch ( Exception e) {
+			//e.printStackTrace();
+			System.out.println("\nError durante el analisis");
+			System.exit(1);
+		}
+		System.out.println("\nAnalisis finalizado");
+	}
+:}
+
+
+
+terminal OBRA, TITULO, LLAVE_IZQ, LLAVE_DER, CLAVE, IGUAL, NOTA_BASE, COMPAS, COMPAS_DURACION, ARMADURA, FRAGMENTO, ID, PRINCIPIO_REP, FINAL_REP, LIGADURA, DURACION, PARENTESIS_IZQ, SILENCIO, PARENTESIS_DER, BEMOL, SOSTENIDO, OCTAVA, PUNTILLO, BECUADRO;
+
+non terminal fragmento, obra, especificacion, clave, compas, armadura, notas_armadura, bloque_notas, elemento, repeticion, secuencia, ligadura, llamada, modificador, nota, lista_elementos, lista_secuencias, silencio_nota, posible_modificador, lista_fragmentos, lista_especificaciones, partitura, posible_puntillo, bemol_sostenido, posible_octava, posible_fin_rep;
+
+partitura::= lista_fragmentos obra;
+lista_fragmentos::= fragmento lista_fragmentos | ;
+obra::= OBRA TITULO LLAVE_IZQ lista_especificaciones bloque_notas LLAVE_DER | OBRA error;
+lista_especificaciones ::= especificacion lista_especificaciones | ;
+
+especificacion::= clave | compas | armadura;
+clave::= CLAVE IGUAL NOTA_BASE;
+compas::= COMPAS IGUAL COMPAS_DURACION | COMPAS IGUAL error;
+armadura::= ARMADURA IGUAL notas_armadura;
+notas_armadura::= bemol_sostenido NOTA_BASE posible_octava notas_armadura | bemol_sostenido NOTA_BASE posible_octava;
+posible_octava::= OCTAVA | ;
+bemol_sostenido::= BEMOL | SOSTENIDO;
+fragmento::= FRAGMENTO ID LLAVE_IZQ lista_especificaciones bloque_notas LLAVE_DER;
+
+bloque_notas::= LLAVE_IZQ lista_elementos LLAVE_DER;
+lista_elementos::= elemento lista_elementos | elemento;
+elemento::= repeticion | secuencia posible_fin_rep | ligadura | llamada;
+posible_fin_rep::= FINAL_REP | ;
+repeticion::= PRINCIPIO_REP lista_secuencias FINAL_REP;
+lista_secuencias ::= secuencia lista_secuencias | secuencia;
+ligadura::= LIGADURA LLAVE_IZQ lista_secuencias LLAVE_DER;
+llamada::= ID;
+secuencia::= DURACION PARENTESIS_IZQ silencio_nota PARENTESIS_DER;
+silencio_nota::= silencio_nota SILENCIO | silencio_nota nota | SILENCIO | nota;
+modificador::= BEMOL | SOSTENIDO | BECUADRO;
+nota::= posible_modificador NOTA_BASE posible_octava posible_puntillo;
+posible_puntillo::= PUNTILLO | ;
+posible_modificador ::= modificador | ;

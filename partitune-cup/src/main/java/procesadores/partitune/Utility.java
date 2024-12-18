@@ -1,16 +1,16 @@
 package procesadores.partitune;
 
+import procesadores.partitune.sym;
+
 class Utility {
     public static final String[] LEXER_ERROR_MESSAGES = {
-        "Error: Comentario sin cerrar",
-        "Error: Caracter no reconocido",
-        "Error: Identificador no permitido",
-        "Error: Duracion de compas erronea",
-        "Error: Titulo incorrecto, faltan las comillas de cierre",
-        "Error: Error desconocido",
+        "Error: Comentario sin cerrar en línea %d columna %d\n",
+        "Error: Caracter no reconocido en línea %d columna %d\n",
+        "Error: Identificador no permitido en línea %d columna %d\n",
+        "Error: Duracion de compas erronea en línea %d columna %d\n",
+        "Error: Titulo incorrecto, faltan las comillas de cierre en línea %d columna %d\n",
+        "Error: Error desconocido en línea %d columna %d\n",
     };
-    // duración compás, es posible poner [0-9]+/[0-9]+, lo cual es un error si no son los valores correctos
-    // además, se puede encontrar un número a secas o separado [" " | \n | \t] del /, lo cual es un error
 
     public static final int LEXER_COMMENT_ERROR = 0;
     public static final int LEXER_UNRECOGNIZED_CHAR = 1;
@@ -33,18 +33,6 @@ class Utility {
         "sf","f","sc","c","n","bl","r",
         "b",
     };
-
-    public enum TokenType {
-        FRAGMENTO,
-        OBRA,
-        CLAVE,
-        COMPAS,
-        ARMADURA,
-        LIG,
-        NOTA,
-        DURACION,
-        BEMOL;
-    }
 
     public enum Note {
         DO,
@@ -75,20 +63,20 @@ class Utility {
         return false;
     }
 
-    public static TokenType getTokenType(String word) {
+    public static int getTokenType(String word) {
         switch (word.toLowerCase()) {
             case "fragmento":
-                return TokenType.FRAGMENTO;
+                return sym.FRAGMENTO;
             case "obra":
-                return TokenType.OBRA;
+                return sym.OBRA;
             case "clave":
-                return TokenType.CLAVE;
+                return sym.CLAVE;
             case "compas":
-                return TokenType.COMPAS;
+                return sym.COMPAS;
             case "armadura":
-                return TokenType.ARMADURA;
+                return sym.ARMADURA;
             case "lig":
-                return TokenType.LIG;
+                return sym.LIGADURA;
             case "do":
             case "re":
             case "mi":
@@ -96,7 +84,7 @@ class Utility {
             case "sol":
             case "la":
             case "si":
-                return TokenType.NOTA;
+                return sym.NOTA_BASE;
             case "sf":
             case "f":
             case "sc":
@@ -104,9 +92,9 @@ class Utility {
             case "n":
             case "bl":
             case "r":
-                return TokenType.DURACION;
+                return sym.DURACION;
             case "b":
-                return TokenType.BEMOL;
+                return sym.BEMOL;
             default:
                 throw new IllegalArgumentException(word);
         }
