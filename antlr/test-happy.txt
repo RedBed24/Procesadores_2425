@@ -20,7 +20,7 @@ fragmento intro {
 /* creacion de la obra con nombre "Las Cuatro Estaciones" */ 
 obra "Las Cuatro Estaciones" { 
       compas = 3/4
-      clave = SOL 
+      clave = SOL
     { 
         intro 
         f (do' re' mi') sc (fa' sol' la') 

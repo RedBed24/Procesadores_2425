@@ -13,7 +13,7 @@ authors = [
 ]
 description = "Conversor Partitune a ABC"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",
@@ -37,11 +37,14 @@ dependencies = [
 [tool.hatch.build.targets.wheel]
 packages = ["."]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.hatch.build.targets.wheel.hooks.custom]
 path = "build_hooks.py"
 dependencies = [
   "antlr4-tools==0.2.1",
-  "hatchling==1.26.3",
+  "hatchling==1.27",
 ]
 
 [project.scripts]

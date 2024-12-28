@@ -12,5 +12,7 @@ pip install .
 ## Usage
 
 ```bash
-partitune input.txt
+partitune --tree input.txt
+partitune --abc input.txt
+
 ```

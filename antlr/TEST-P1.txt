@@ -1,0 +1,9 @@
+obra "Las Cuatro Estaciones" {
+    compas = 3/4
+    clave = SOL
+    {
+        f (DO RE MI) sc (FA SOL LA)
+        |: n (DO RE MI FA) :| 
+        lig { n (DO RE) sc (FA SOL) }
+    }
+}
