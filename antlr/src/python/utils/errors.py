@@ -1,0 +1,6 @@
+LEXER_COMMENT_ERROR = "Error: Comentario sin cerrar"
+LEXER_UNRECOGNIZED_CHAR = "Error: Caracter no reconocido"
+LEXER_UNRECOGNIZED_ID = "Error: Identificador no permitido"
+LEXER_COMPAS_DURATION_ERROR = "Error: Duración de compás errónea"
+LEXER_UNFINISHED_TITLE = "Error: Título incorrecto, faltan las comillas de cierre"
+LEXER_UNKNOWN_ERROR = "Error: Error desconocido"
