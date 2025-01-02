@@ -71,7 +71,7 @@ export const Editor: React.FC = () => {
           />
           <Group>
             <Button mt='xl' size='md' onClick={handleSubmit} rightSection={<SendHorizontal />}>
-              Enviar
+              Convertir
             </Button>
             <Button mt='xl' size='md' onClick={() => { setMusicText(''); setIsSubmitted(false); }} rightSection={<Eraser />}>
               Borrar
