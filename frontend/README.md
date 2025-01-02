@@ -1,50 +1,40 @@
-# React + TypeScript + Vite
+# Web para interactuar con la API
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+La web permite generar partituras en el lenguaje 'Partitune' y convertirlas a 'ABC'. La web se conecta a la API del backend para realizar la conversión. Además, permite visualizar las partituras y reproducirlas.
 
-Currently, two official plugins are available:
+## Apartados
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Editor
 
-## Expanding the ESLint configuration
+Esta página se abre por defecto. Tiene un cuadro de texto para que el usuario pueda escribir. Debajo hay un botón para subir un archivo. Los otros botones permiten borrar el contenido del cuadro de texto y enviar el contenido al backend.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Debajo del editor, se muestra a la izquierda la partitura en formato 'ABC' y a la derecha el reproductor de audio y la partitura. Todo esto se puede descargar.
 
-- Configure the top-level `parserOptions` property like this:
+### Ejemplos
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+TODO: Añadir ejemplos ya generados
+
+### Ayuda
+
+Muestra los autores.
+TODO: Añadir ayuda
+
+
+
+## Ejectuar la aplicación
+
+Instalar dependencias:
+```bash
+npm install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+En desarrollo:
+```bash
+npm run dev
+```
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+En producción:
+```bash
+npm run build
+npm run start
 ```
