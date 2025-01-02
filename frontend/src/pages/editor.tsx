@@ -6,18 +6,14 @@ import { UploadFile } from '../components/upload-file';
 
 export const Editor: React.FC = () => {
   const [musicText, setMusicText] = useState<string>('');
-  const [downloadLink, setDownloadLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null); // Estado de errores
   const [abcMusic, setAbcMusic] = useState<string>('');
-  const [filename, setFilename] = useState<string>('');
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [uploadModalOpened, setUploadModalOpened] = useState<boolean>(false);
 
   const handleSubmit = async () => {
     setError(null);
-    setDownloadLink(null);
     try {
-      // Crea un FormData para enviar el contenido como si fuera un archivo
       const formData = new FormData();
       const abcBlob = new Blob([musicText], { type: 'text/plain' });
       formData.append('file', abcBlob, 'music.abc');
@@ -31,13 +27,10 @@ export const Editor: React.FC = () => {
         throw new Error(`HTTP Error: ${response.status}`);
       }
 
-      const data = await response.json();  // La respuesta ahora es un objeto JSON
+      const data = await response.json();  
 
-      const text = data.content;  // Extraer el contenido del archivo .abc
-      const filename = data.filename;  // Extraer el nombre del archivo
-
+      const text = data.content; 
       setAbcMusic(text);
-      setFilename(filename);
       setIsSubmitted(true);
 
     } catch (err: any) {
@@ -45,29 +38,14 @@ export const Editor: React.FC = () => {
     }
   };
 
-  const handleDownload = async () => {
-    try {
-      const response = await fetch(`http://localhost:8000/get_abc?file_path=${encodeURIComponent(downloadLink)}`);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch the file');
-      }
-
-
-    } catch (error) {
-      console.error('Error downloading file:', error);
-    }
-  };
-
-
   const downloadText = () => {
     const file = new Blob([abcMusic], { type: 'text/plain' });
     const url = URL.createObjectURL(file);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'music.txt'; // Nombre del archivo descargado
+    a.download = 'music.txt'; // Poner un nombre al archivo
     a.click();
-    URL.revokeObjectURL(url); // Limpiar el objeto URL
+    URL.revokeObjectURL(url);
   };
 
   const handleFileLoad = (content: string) => {
