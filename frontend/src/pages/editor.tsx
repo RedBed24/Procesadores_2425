@@ -1,7 +1,7 @@
-import { Container, Textarea, Title, Button, Divider, Group, Stack, Skeleton, ActionIcon, Modal } from '@mantine/core';
+import { Container, Textarea, Title, Button, Divider, Group, Stack, Skeleton, ActionIcon, Modal, Alert } from '@mantine/core';
 import { useState } from 'react';
 import { AbcPlayer } from '../components/abcPlayer';
-import { Download, Eraser, Paperclip, SendHorizontal } from 'lucide-react';
+import { Download, Eraser, Paperclip, SendHorizontal, Ban } from 'lucide-react';
 import { UploadFile } from '../components/upload-file';
 
 export const Editor: React.FC = () => {
@@ -14,6 +14,9 @@ export const Editor: React.FC = () => {
   const handleSubmit = async () => {
     setError(null);
     try {
+      if (!musicText) {
+        throw new Error('No hay texto para enviar');
+      }
       const formData = new FormData();
       const abcBlob = new Blob([musicText], { type: 'text/plain' });
       formData.append('file', abcBlob, 'music.abc');
@@ -27,9 +30,9 @@ export const Editor: React.FC = () => {
         throw new Error(`HTTP Error: ${response.status}`);
       }
 
-      const data = await response.json();  
+      const data = await response.json();
 
-      const text = data.content; 
+      const text = data.content;
       setAbcMusic(text);
       setIsSubmitted(true);
 
@@ -57,12 +60,12 @@ export const Editor: React.FC = () => {
       <Container size='xl' fluid>
         <Stack>
           <Title order={2} ta="center" mb="md" size={30}>
-          Música en lenguaje Partitune
+            Música en lenguaje Partitune
           </Title>
           <Textarea placeholder="Escribe aquí tu música"
             autosize
-            minRows={20}
-            maxRows={20}
+            minRows={15}
+            maxRows={15}
             value={musicText}
             onChange={(event) => setMusicText(event.currentTarget.value)}
           />
@@ -70,17 +73,20 @@ export const Editor: React.FC = () => {
             <Button mt='xl' size='md' onClick={handleSubmit} rightSection={<SendHorizontal />}>
               Enviar
             </Button>
-            <Button mt='xl'size='md'  onClick={() => {setMusicText(''); setIsSubmitted(false);}} rightSection={<Eraser />}>
+            <Button mt='xl' size='md' onClick={() => { setMusicText(''); setIsSubmitted(false); }} rightSection={<Eraser />}>
               Borrar
             </Button>
-            <Button mt='xl' size='md' onClick={() => {setUploadModalOpened(true);}} rightSection={<Paperclip />}>
+            <Button mt='xl' size='md' onClick={() => { setUploadModalOpened(true); }} rightSection={<Paperclip />}>
               Subir archivo
             </Button>
           </Group>
         </Stack>
-      <Divider my='xl' />
+        {error &&
+        <Alert mt='sm' variant='light' color='red' title='Error' radius = 'md' icon={<Ban/>}>{error}</Alert>
+        }
+        <Divider my='xl' />
 
-{/* Apartado Texto musica ABC */}
+        {/* Apartado Texto musica ABC */}
 
         <Group align="stretch" justify="flex-start" mb='xl'>
           <Stack w='45%' mt='xl' align="stretch"
@@ -109,7 +115,7 @@ export const Editor: React.FC = () => {
               </Stack>
             </Skeleton>
           </Stack>
-{/* Apartado de reproduccion */}
+          {/* Apartado de reproduccion */}
 
           <Stack w='47%' mt='xl' align="stretch"
             justify="flex-start">
@@ -122,10 +128,10 @@ export const Editor: React.FC = () => {
           </Stack>
         </Group>
 
-{/* Modal */}
-<Modal opened={uploadModalOpened} onClose={() => setUploadModalOpened(false)} size="lg">
-        <UploadFile onFileLoad={handleFileLoad} closeModal={() => setUploadModalOpened(false)}/>
-      </Modal>
+        {/* Modal */}
+        <Modal opened={uploadModalOpened} onClose={() => setUploadModalOpened(false)} size="lg">
+          <UploadFile onFileLoad={handleFileLoad} closeModal={() => setUploadModalOpened(false)} />
+        </Modal>
 
 
       </Container>
