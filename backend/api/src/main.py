@@ -2,7 +2,6 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
-from .abc_midi import generate_midi
 import tempfile
 import shutil
 import os
@@ -39,23 +38,3 @@ def generate_abc(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating abc file.")
 
-@app.get("/get_abc")
-def get_abc(file_path:str):
-    try:
-        with open(f"../{file_path}", "r") as f:
-            abc_content = f.read()
-        return PlainTextResponse(abc_content)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error downloading abc file.")
-
-@app.get("/get_midi/{file_path}")
-def get_midi(file_path: str):
-    try:
-        midi = os.path.join(directory, file_path)
-        print(f"midi: {midi}")
-        generate_midi(midi)
-        output = file_path.split('.')[0]
-        return FileResponse(f"{directory}/{output}.mid", media_type="audio/midi")
-    except Exception as e:
-        raise HTTPException(status_code=404, detail="File not found")
-    
