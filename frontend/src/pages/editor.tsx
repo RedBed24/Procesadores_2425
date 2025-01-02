@@ -5,9 +5,9 @@ import { Download, Eraser, Paperclip, SendHorizontal, Ban } from 'lucide-react';
 import { UploadFile } from '../components/upload-file';
 
 export const Editor: React.FC = () => {
-  const [musicText, setMusicText] = useState<string>('');
-  const [error, setError] = useState<string | null>(null); // Estado de errores
-  const [abcMusic, setAbcMusic] = useState<string>('');
+  const [musicText, setMusicText] = useState<string>(''); //text from textarea
+  const [error, setError] = useState<string | null>(null);
+  const [abcMusic, setAbcMusic] = useState<string>(''); //abc text from backend
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [uploadModalOpened, setUploadModalOpened] = useState<boolean>(false);
 
@@ -15,13 +15,13 @@ export const Editor: React.FC = () => {
     setError(null);
     try {
       if (!musicText) {
-        throw new Error('No hay texto para enviar');
+        throw new Error('No hay texto, no se puede enviar.');
       }
       const formData = new FormData();
       const abcBlob = new Blob([musicText], { type: 'text/plain' });
       formData.append('file', abcBlob, 'music.abc');
 
-      const response = await fetch('/generate_abc', {
+      const response = await fetch('/generate_abc', { //send to backend
         method: 'POST',
         body: formData,
       });
@@ -29,10 +29,10 @@ export const Editor: React.FC = () => {
       if (!response.ok) {
         throw new Error(`HTTP Error: ${response.status}`);
       }
-
+      // get response as JSON
       const data = await response.json();
-
       const text = data.content;
+
       setAbcMusic(text);
       setIsSubmitted(true);
 
@@ -42,6 +42,7 @@ export const Editor: React.FC = () => {
   };
 
   const downloadText = () => {
+    // download abc music
     const file = new Blob([abcMusic], { type: 'text/plain' });
     const url = URL.createObjectURL(file);
     const a = document.createElement('a');
@@ -52,6 +53,7 @@ export const Editor: React.FC = () => {
   };
 
   const handleFileLoad = (content: string) => {
+    // from subir archivo
     setMusicText(content);
   };
 

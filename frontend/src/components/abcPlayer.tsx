@@ -1,8 +1,8 @@
 import abcjs, { synth } from 'abcjs';
 import '../css/midi-player.css';
 import { useEffect, useRef, useState } from 'react';
-import { Button, Group, Center, Loader, Progress, Slider, Text, Stack, ActionIcon } from "@mantine/core";
-import { Play, Pause, Settings, Square, Download } from 'lucide-react';
+import { Group, Stack, ActionIcon } from "@mantine/core";
+import { Download } from 'lucide-react';
 
 interface AbcPlayerProps {
     abcMusic: string;
@@ -10,30 +10,45 @@ interface AbcPlayerProps {
 }
 
 export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
-    const [isInitialized, setIsInitialized] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
-
-
     const [controler, setControler] = useState<abcjs.SynthObjectController | undefined>(undefined);
     const [visualObj, setVisualObj] = useState<abcjs.TuneObject | undefined>(undefined);
     const paperRef = useRef<HTMLDivElement | null>(null);
 
+    useEffect(() => {
+        if (display) {
+            handleInit();
+        }
+        // TODO - highlight current playing note
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .highlighted {
+                fill: red !important;
+                stroke: red !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, [display]);
+
     const handleInit = async () => {
+        {/* called when it is initialize */}
         try {
-            setLoading(true);
             console.log('Initializing synth...');
+            //get context audio!
             const contextAudio = new (window.AudioContext || (window as any).webkitAudioContext)();
 
+            // create abc representation: "paper" create image and audio, "*" only audio
             const visualObj = abcjs.renderAbc("paper", abcMusic, {
                 responsive: "resize",
-                add_classes: true,
-            })[0];
+                add_classes: true, // save classes from abc
+            })[0]; // get only first tune
 
+            // TODO - handle multiple tunes
 
-            setIsInitialized(true);
-            setError(null);
-
+            // create audio
             const controler = new abcjs.synth.SynthController();
 
             controler.load("#audio", {}, {
@@ -55,23 +70,17 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
                 eventCallback: handleEvent,
             });
 
-
             setControler(controler);
             setVisualObj(visualObj);
 
         } catch (err) {
             console.error('Error initializing synth:', err);
-            setError('Failed to initialize the synthesizer.');
         }
-        finally {
-            setLoading(false);
-        }
-        setLoading(false);
     };
 
 
     const handleEvent = (ev: any) => {
-        // Limpiar resaltado de notas anteriores
+        // TODO - highlight current playing note
         document.querySelectorAll('.abcjs-note').forEach(note => note.classList.remove('highlighted'));
 
         if (ev && ev.elements) {
@@ -83,29 +92,13 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
     };
 
     const handleBeat = (beatNumber: number, totalBeats: number, beatFraction: number) => {
+        // TODO - highlight current playing note
         const currentNotes = document.querySelectorAll(`.abcjs-note`);
         currentNotes.forEach(note => note.classList.remove('highlighted'));
 
         const highlightedNotes = document.querySelectorAll(`.abcjs-note.abcjs-beat-${beatNumber}`);
         highlightedNotes.forEach(note => note.classList.add('highlighted'));
     };
-    useEffect(() => {
-        if (display) {
-            handleInit();
-        }
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .highlighted {
-                fill: red !important;
-                stroke: red !important;
-            }
-        `;
-        document.head.appendChild(style);
-
-        return () => {
-            document.head.removeChild(style);
-        };
-    }, [display]);
 
     const downloadMidi = () => {
         if (controler) {
@@ -117,20 +110,16 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
         if (paperRef.current) {
           const svgElement = paperRef.current.querySelector('svg');
           if (svgElement) {
-            // Convertir el SVG a un string
             const svgString = new XMLSerializer().serializeToString(svgElement);
     
-            // Crear un Blob para el archivo SVG
             const blob = new Blob([svgString], { type: 'image/svg+xml' });
             const url = URL.createObjectURL(blob);
     
-            // Crear un enlace de descarga y simular el clic
             const a = document.createElement('a');
             a.href = url;
             a.download = 'partitura.svg'; // Nombre del archivo descargado
             a.click();
     
-            // Liberar el URL temporal
             URL.revokeObjectURL(url);
           }
         }
@@ -138,7 +127,6 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
 
     return (
         <>
-
             <Stack>
                 <Group p={0}>
                     <div id="audio" style={{ flexGrow: 1, margin: 0 }} ></div>

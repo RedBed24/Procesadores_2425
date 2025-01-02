@@ -17,11 +17,11 @@ export const UploadFile: React.FC<UploadFileProps> = ({onFileLoad, closeModal}) 
     const [loading, setLoading] = useState(false);
 
     const handleDrop =  (files: File[]) => {
-        const selectedFile = files[0];
+      // handle Drop from Dropzone
+        const selectedFile = files[0]; //only one file
         if (selectedFile.type !== 'text/plain') {
           setError('Only text files are supported');
           setFile(null);
-          console.log('Only text files are supported');
           return;
         }
 
@@ -34,7 +34,7 @@ export const UploadFile: React.FC<UploadFileProps> = ({onFileLoad, closeModal}) 
         reader.onload = () => {
             setLoading(false);
             if (reader.result) {
-                setFileContent(reader.result as string);
+                setFileContent(reader.result as string); //save file content
               }
         };
 
@@ -43,18 +43,21 @@ export const UploadFile: React.FC<UploadFileProps> = ({onFileLoad, closeModal}) 
 
 
     const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault(); 
+      // function to handle submit (click on button)
+        event.preventDefault(); // don't reload page!
         if (fileContent) {
-            onFileLoad(fileContent);
-            closeModal();
+            onFileLoad(fileContent); //load content on editor
+            closeModal(); //close this object on editor
           }
       };
 
     return (
         <form onSubmit={handleSubmit}>
         <Stack>
-
-            <Dropzone onDrop={handleDrop} loading={loading} multiple={false} onReject={() =>{ setError('Solo se admiten archivos de texto');}} accept={["text/plain"]}>
+            <Dropzone onDrop={handleDrop} loading={loading} multiple={false} 
+            onReject={() =>{ setError('Solo se admiten archivos de texto');}} 
+            accept={["text/plain"]}>
+              {/* content dropzone */}
               <Flex align="center" justify="center" style={{ height:200, border: '2px dotted #ccc' }} direction="column" gap="xs">
                 {file && (
                     <Card shadow="sm" padding="sm" radius="sm" withBorder>
@@ -70,10 +73,17 @@ export const UploadFile: React.FC<UploadFileProps> = ({onFileLoad, closeModal}) 
                 )}
               </Flex>
             </Dropzone>
+          {/* outside dropzone */}
           <Group justify="center">
-          <Button type="submit" disabled={!file}>Cargar archivo</Button>
-          <Button type="button" onClick={() => { setFile(null); setFileContent(null); setError(null); }}>Borrar archivo</Button>
+          <Button type="submit" disabled={!file}> {/* SUMBIT BUTTON */}
+            Cargar archivo
+          </Button>
+          <Button type="button" onClick={() => { setFile(null); setFileContent(null); setError(null); }}>
+            Borrar archivo
+          </Button>
           </Group>
+
+          {/* show messages for user feedback */}
           {file && (
           <Flex align="center" gap="sm">
             <CheckCircle2 color="green" />

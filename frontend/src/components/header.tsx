@@ -39,10 +39,10 @@ export const Header: React.FC<HeaderProps> = ({ links }) => {
         <Music size={42} color='#099CFF' />
         <Text mr='auto' style={{ fontWeight: 'bold', fontSize: 25, fontFamily: "Trebuchet MS", fontStyle: "sans-serif" }}>
           PARTITUNE</Text>
-        <Group gap={5} visibleFrom="xs" mr='xl'>
+        <Group gap={5} visibleFrom="xs" mr='xl'> {/* render links */}
           {items}
         </Group>
-
+        {/* Burger menu only for small devices */}
         <Burger opened={opened} onClick={toggle} hiddenFrom="xs" size="sm" />
       </Container>
     </header>
