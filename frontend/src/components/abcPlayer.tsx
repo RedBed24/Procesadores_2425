@@ -13,28 +13,25 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
     const [controler, setControler] = useState<abcjs.SynthObjectController | undefined>(undefined);
     const [visualObj, setVisualObj] = useState<abcjs.TuneObject | undefined>(undefined);
     const paperRef = useRef<HTMLDivElement | null>(null);
+    const lastElsRef = useRef<Element[][]>([]);
+
 
     useEffect(() => {
         if (display) {
             handleInit();
         }
-        // TODO - highlight current playing note
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .highlighted {
-                fill: red !important;
-                stroke: red !important;
-            }
-        `;
-        document.head.appendChild(style);
-
-        return () => {
-            document.head.removeChild(style);
-        };
     }, [display]);
 
+    const cursorControlClass = {
+        onEvent: (event: any) => {
+            console.log("An event is happening", event);
+            if (!event.elements) return;
+            colorElements(event.elements);
+        },
+    };
+
     const handleInit = async () => {
-        {/* called when it is initialize */}
+        {/* called when it is initialize */ }
         try {
             console.log('Initializing synth...');
             //get context audio!
@@ -51,7 +48,7 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
             // create audio
             const controler = new abcjs.synth.SynthController();
 
-            controler.load("#audio", {}, {
+            controler.load("#audio", cursorControlClass, {
                 displayRestart: true,
                 displayPlay: true,
                 displayProgress: true,
@@ -64,12 +61,6 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
                 console.warn("Audio problem:", error);
             });
 
-            const timingCallbacks = new abcjs.TimingCallbacks(visualObj, {
-                beatCallback: undefined,
-                lineEndCallback: undefined,
-                eventCallback: handleEvent,
-            });
-
             setControler(controler);
             setVisualObj(visualObj);
 
@@ -79,25 +70,14 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
     };
 
 
-    const handleEvent = (ev: any) => {
-        // TODO - highlight current playing note
-        document.querySelectorAll('.abcjs-note').forEach(note => note.classList.remove('highlighted'));
-
-        if (ev && ev.elements) {
-            // Resaltar las notas activas
-            ev.elements.forEach((element: Element) => {
-                element.classList.add('highlighted');
-            });
-        }
-    };
-
-    const handleBeat = (beatNumber: number, totalBeats: number, beatFraction: number) => {
-        // TODO - highlight current playing note
-        const currentNotes = document.querySelectorAll(`.abcjs-note`);
-        currentNotes.forEach(note => note.classList.remove('highlighted'));
-
-        const highlightedNotes = document.querySelectorAll(`.abcjs-note.abcjs-beat-${beatNumber}`);
-        highlightedNotes.forEach(note => note.classList.add('highlighted'));
+    const colorElements = (els: Element[][]) => {
+        lastElsRef.current.forEach(group =>
+            group.forEach(el => el.classList.remove("color"))
+        );
+        els.forEach(group =>
+            group.forEach(el => el.classList.add("color"))
+        );
+        lastElsRef.current = els;
     };
 
     const downloadMidi = () => {
@@ -108,22 +88,22 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
     };
     const handleDownload = () => {
         if (paperRef.current) {
-          const svgElement = paperRef.current.querySelector('svg');
-          if (svgElement) {
-            const svgString = new XMLSerializer().serializeToString(svgElement);
-    
-            const blob = new Blob([svgString], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
-    
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'partitura.svg'; // Nombre del archivo descargado
-            a.click();
-    
-            URL.revokeObjectURL(url);
-          }
+            const svgElement = paperRef.current.querySelector('svg');
+            if (svgElement) {
+                const svgString = new XMLSerializer().serializeToString(svgElement);
+
+                const blob = new Blob([svgString], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'partitura.svg'; // Nombre del archivo descargado
+                a.click();
+
+                URL.revokeObjectURL(url);
+            }
         }
-      };
+    };
 
     return (
         <>

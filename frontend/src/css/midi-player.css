@@ -1,5 +1,10 @@
 /* Some basic CSS to make the Audio controls in abcjs presentable. */
 
+.color {
+    fill: #1971c2;
+}
+
+
 .abcjs-inline-audio {
 	height: 26px;
 	padding: 0 5px;
