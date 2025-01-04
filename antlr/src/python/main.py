@@ -3,9 +3,10 @@ from antlr4 import *
 from antlr4.tree.Trees import Trees
 from graphviz import Digraph
 
-from analysis.Parser import Parser  # Importa el Parser
-from analysis.Scanner import Scanner  # Importa el Scanner
-from antlr_to_abc import antlr_to_abc  # Importa la función de transcripción a ABC
+from .analysis.Parser import Parser  # Importa el Parser
+from .analysis.Scanner import Scanner  # Importa el Scanner
+from .antlr_to_abc import antlr_to_abc  # Importa la función de transcripción a ABC
+from .listener import Listener  # Importa el Listener
 
 
 # Para visualización gráfica
@@ -59,8 +60,12 @@ def generate_abc(input_file):
     print(parse_tree.toStringTree(recog=parser))
 
 
-    # Llama a antlr_to_abc para convertir el árbol en ABC
-    abc_output = antlr_to_abc(parse_tree)
+    walker = ParseTreeWalker()
+    listener = Listener()
+
+    walker.walk(listener, parse_tree)
+
+    abc_output = listener.abc
 
     if not abc_output.strip():
         print("Advertencia: No se generó contenido en el archivo ABC. Verifica el archivo de entrada o la gramática.")
