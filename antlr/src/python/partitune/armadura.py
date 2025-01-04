@@ -1,16 +1,17 @@
 from enum import Enum
 from dataclasses import dataclass
-from pydantic import BaseModel
+
+from .nota import NotaBase
 
 
 class ModificadorArmadura(Enum):
-    SOSTENIDO = "'"
+    SOSTENIDO = "#"
     BEMOL = "b"
 
 
 def get_modificador_armadura_from_partitune(modificador: str) -> ModificadorArmadura:
     match modificador:
-        case "'":
+        case "#":
             return ModificadorArmadura.SOSTENIDO
         case "b":
             return ModificadorArmadura.BEMOL
@@ -19,12 +20,49 @@ def get_modificador_armadura_from_partitune(modificador: str) -> ModificadorArma
 
 
 @dataclass
-class Armadura(BaseModel):
+class Armadura:
     cantidad_modificadores: int
     tipo_modificacion: ModificadorArmadura
 
-    def validar(self):
-        if self.cantidad_modificadores < 0:
-            raise ValueError("La cantidad de modificadores no puede ser negativa.")
-        if self.cantidad_modificadores > 7:
-            raise ValueError("La cantidad de modificadores no puede ser mayor a 7.")
+    def __init__(self, tipo_modificacion: ModificadorArmadura, notas: list[NotaBase]):
+        self.tipo_modificacion = tipo_modificacion
+        validate_armadura(tipo_modificacion, notas)
+
+
+
+def validate_armadura(
+    tipo_modificacion: ModificadorArmadura, notas_a_validar: list[NotaBase]
+) -> bool:
+    notas_posibles: list[NotaBase]
+    match tipo_modificacion:
+        case ModificadorArmadura.BEMOL:
+            notas_posibles = [
+                NotaBase.SI,
+                NotaBase.MI,
+                NotaBase.LA,
+                NotaBase.RE,
+                NotaBase.SOL,
+                NotaBase.DO,
+                NotaBase.FA,
+            ]
+        case ModificadorArmadura.SOSTENIDO:
+            notas_posibles = [
+                NotaBase.FA,
+                NotaBase.DO,
+                NotaBase.SOL,
+                NotaBase.RE,
+                NotaBase.LA,
+                NotaBase.MI,
+                NotaBase.SI,
+            ]
+
+    cuenta: list[int] = [0] * len(notas_posibles)
+
+    for nota in notas_a_validar:
+        cuenta[notas_posibles.index(nota)] += 1
+
+    for i, cantidad in enumerate(cuenta):
+        if cantidad == 0:
+            break
+
+    return all(cantidad == 0 for cantidad in cuenta[i + 1 :])
