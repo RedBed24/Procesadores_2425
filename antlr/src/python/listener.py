@@ -14,6 +14,18 @@ class Listener(ParserListener):
         self.current_compas = None
         self.current_clave = None
 
+    def exitNotas_armadura(self, ctx: Parser.Notas_armaduraContext):
+        nro_bemoles: int = len(ctx.BEMOL())
+        nro_sostenidos: int = len(ctx.SOSTENIDO())
+
+        # FIXME: Pueden tener octava???
+        notas_base: list[NotaBase] = list(
+            map(
+                lambda nota: get_nota_base_from_partitune(nota.getText()),
+                ctx.NOTA_BASE(),
+            )
+        )
+
     def exitNota(self, ctx: Parser.NotaContext):
         octava: Octava = (
             Octava.NORMAL
