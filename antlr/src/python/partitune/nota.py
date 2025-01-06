@@ -10,3 +10,4 @@ class Nota:
     nota_base: NotaBase
     modificador: Optional[Modificador] = None
     octava: Octava = Octava.NORMAL
+    puntillo: bool = False

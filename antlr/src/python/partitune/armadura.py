@@ -1,22 +1,7 @@
-from enum import Enum
 from dataclasses import dataclass
 
 from .nota import NotaBase
-
-
-class ModificadorArmadura(Enum):
-    SOSTENIDO = "#"
-    BEMOL = "b"
-
-
-def get_modificador_armadura_from_partitune(modificador: str) -> ModificadorArmadura:
-    match modificador:
-        case "#":
-            return ModificadorArmadura.SOSTENIDO
-        case "b":
-            return ModificadorArmadura.BEMOL
-        case _:
-            raise ValueError(f"Modificador de armadura no válido: {modificador}")
+from .modificador_armadura import ModificadorArmadura
 
 
 @dataclass
@@ -27,7 +12,6 @@ class Armadura:
     def __init__(self, tipo_modificacion: ModificadorArmadura, notas: list[NotaBase]):
         self.tipo_modificacion = tipo_modificacion
         validate_armadura(tipo_modificacion, notas)
-
 
 
 def validate_armadura(
