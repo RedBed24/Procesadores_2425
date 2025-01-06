@@ -40,6 +40,9 @@ def validate_armadura(
                 NotaBase.SI,
             ]
 
+    if not notas_a_validar:
+        return False
+
     cuenta: list[int] = [0] * len(notas_posibles)
 
     for nota in notas_a_validar:
