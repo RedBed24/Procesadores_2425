@@ -7,6 +7,7 @@ from .analysis.Parser import Parser  # Importa el Parser
 from .analysis.Scanner import Scanner  # Importa el Scanner
 from .antlr_to_abc import antlr_to_abc  # Importa la función de transcripción a ABC
 from .listener import Listener  # Importa el Listener
+from .generacion import generar_abc
 
 
 # Para visualización gráfica
@@ -65,7 +66,7 @@ def generate_abc(input_file):
 
     walker.walk(listener, parse_tree)
 
-    abc_output = listener.abc
+    abc_output = generar_abc(listener.obra)
 
     if not abc_output.strip():
         print("Advertencia: No se generó contenido en el archivo ABC. Verifica el archivo de entrada o la gramática.")
