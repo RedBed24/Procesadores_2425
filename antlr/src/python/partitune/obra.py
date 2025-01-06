@@ -1,6 +1,6 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
-from __future__ import annotations
 
 from .armadura import Armadura
 from .compas import Compas

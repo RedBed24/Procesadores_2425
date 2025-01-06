@@ -3,16 +3,14 @@ from .analysis.Parser import Parser
 
 from .partitune.octava import Octava, get_octava_from_partitune
 from .partitune.nota_base import NotaBase, get_nota_base_from_partitune
-
+from .partitune.fragmento import Fragmento
+from .partitune.obra import Obra
 
 class Listener(ParserListener):
 
     def __init__(self):
-        self.id_table: dict[str, "type"] = {}
-        self.abc: str = ""
-        self.current_index = 1
-        self.current_compas = None
-        self.current_clave = None
+        self.id_table: dict[str, Fragmento] = {} # TODO: lanzar error, ver c
+        self.obra: Obra
 
     def exitNotas_armadura(self, ctx: Parser.Notas_armaduraContext):
         nro_bemoles: int = len(ctx.BEMOL())
