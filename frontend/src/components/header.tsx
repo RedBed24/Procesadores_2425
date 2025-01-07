@@ -35,10 +35,10 @@ export const Header: React.FC<HeaderProps> = ({ links }) => {
 
   return (
     <header className={classes.header}>
-      <Container size="md" className={classes.inner} fluid>
+      <Container size="md" className={classes.inner} fluid bg='#bfcbe3' style={{ borderBottom: '1px solid #ffffff' }}>
         <Music size={42} color='#099CFF' />
         <Text mr='auto' style={{ fontWeight: 'bold', fontSize: 25, fontFamily: "Trebuchet MS", fontStyle: "sans-serif" }}>
-          PARTITUNE</Text>
+          PartiTune</Text>
         <Group gap={5} visibleFrom="xs" mr='xl'> {/* render links */}
           {items}
         </Group>

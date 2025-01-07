@@ -12,6 +12,7 @@
   "dependencies": {
     "@mantine/core": "^7.15.2",
     "@mantine/dropzone": "^7.15.2",
+    "@monaco-editor/react": "^4.6.0",
     "abcjs": "^6.4.4",
     "html-midi-player": "^1.5.0",
     "lucide-react": "^0.469.0",

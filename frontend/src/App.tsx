@@ -1,6 +1,6 @@
 import { Route, Switch, Router } from 'wouter';
 import { Container } from '@mantine/core';
-import { Editor } from './pages/editor';
+import { EditorPartitune } from './pages/editor';
 import { Header } from "./components/header";
 import { Help } from "./pages/help";
 import { Examples } from "./pages/examples";
@@ -16,10 +16,10 @@ export const App: React.FC = () => {
 
   return (
     <Router>
-    <Container  size='xl' fluid>
+    <Container size='xl' fluid p={0}>
       <Header links={links} />
         <Switch>
-          <Route path="/" component={Editor}/>
+          <Route path="/" component={EditorPartitune}/>
           <Route path="/examples" component={Examples}/>
           <Route path="/help" component={Help}/>
         </Switch>

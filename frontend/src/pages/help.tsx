@@ -3,7 +3,7 @@ import { Author } from "../components/author";
 
 export const Help: React.FC = () => {
     return (
-        <Container fluid>
+        <Container fluid h='100vh'>
           <Title order={2} ta="center" mb="md">
         Autores
           </Title>

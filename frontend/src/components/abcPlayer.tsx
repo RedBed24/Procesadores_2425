@@ -1,7 +1,7 @@
 import abcjs, { synth } from 'abcjs';
 import '../css/midi-player.css';
 import { useEffect, useRef, useState } from 'react';
-import { Group, Stack, ActionIcon } from "@mantine/core";
+import { Group, Stack, ActionIcon, ScrollArea } from "@mantine/core";
 import { Download } from 'lucide-react';
 
 interface AbcPlayerProps {
@@ -106,9 +106,8 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
     };
 
     return (
-        <>
-            <Stack>
-                <Group p={0}>
+            <Stack p={0} gap={0}>
+                <Group p={0} mt={0} mb={0}>
                     <div id="audio" style={{ flexGrow: 1, margin: 0 }} ></div>
                     <ActionIcon onClick={downloadMidi}
                         style={{
@@ -131,9 +130,10 @@ export const AbcPlayer: React.FC<AbcPlayerProps> = ({ abcMusic, display }) => {
                             right: '5px',
                             zIndex: 1
                         }}><Download /></ActionIcon>
-                    <div id="paper" ref={paperRef} style={{ marginTop: 0 }} ></div>
+                    <ScrollArea style={{ height: '475px', background: 'white' }} type='auto'>
+                    <div id="paper" ref={paperRef} style={{ marginTop: 0}} ></div>
+                    </ScrollArea>
                 </Stack>
             </Stack>
-        </>
     );
 };
