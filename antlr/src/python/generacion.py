@@ -13,6 +13,7 @@ from .partitune.clave import Clave
 from .partitune.armadura import Armadura
 from .partitune.modificador import Modificador
 from .partitune.fragmento import Fragmento
+from .partitune.modificador_armadura import ModificadorArmadura
 
 
 def _duracion_to_abc(duracion: Duracion) -> str:
@@ -138,16 +139,25 @@ def _parse_clave(clave: Clave, armadura: Armadura | None) -> str:
     """
     # Mapeo simple de claves musicales a notación ABC.
     clave_map = {
-        Clave.SOL: "G",
-        Clave.FA:  "F",
-        Clave.DO:  "C"
+        Clave.SOL: "",
+        Clave.FA:  "clef=bass",
+        Clave.DO:  "clef=alto"
     }
     # Se obtiene la cadena correspondiente a la clave.
-    clave_str = clave_map.get(clave, "C")
-    # CORREGIR ARMADURA 
     if armadura:
-        clave_str += f" (armadura: {armadura.tipo_modificacion.value})"
-    return clave_str
+        match armadura.tipo_modificacion:
+            case ModificadorArmadura.BEMOL:
+                notas_posibles = [
+                "F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"
+                ]
+            case ModificadorArmadura.SOSTENIDO:
+                notas_posibles = [
+                "G", "D", "A", "E", "B", "F#", "C#"
+                ]
+        clave_str = " ".join(notas_posibles[:armadura.cantidad_modificadores])
+    else:
+        clave_str = "C"
+    return clave_map.get(clave, "") + clave_str
 
 
 def _procesar_bloque(bloque_notas: list, context: tuple) -> str:

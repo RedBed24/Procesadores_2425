@@ -6,12 +6,15 @@ from .modificador_armadura import ModificadorArmadura
 
 @dataclass
 class Armadura:
-    cantidad_modificadores: int
+    cantidad_modificadores: int # TODO: Assign a value to this field!
     tipo_modificacion: ModificadorArmadura
 
     def __init__(self, tipo_modificacion: ModificadorArmadura, notas: list[NotaBase]):
         self.tipo_modificacion = tipo_modificacion
-        validate_armadura(tipo_modificacion, notas)
+        if validate_armadura(tipo_modificacion, notas):
+            self.cantidad_modificadores = len(notas)
+        else:
+            self.cantidad_modificadores = 0
 
 
 def validate_armadura(
