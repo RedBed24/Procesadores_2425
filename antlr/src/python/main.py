@@ -5,9 +5,9 @@ from graphviz import Digraph
 
 from .analysis.Parser import Parser  # Importa el Parser
 from .analysis.Scanner import Scanner  # Importa el Scanner
-from .antlr_to_abc import antlr_to_abc  # Importa la función de transcripción a ABC
 from .listener import Listener  # Importa el Listener
-from .generacion import generar_abc
+from .generacion import generate_abc
+
 
 
 # Para visualización gráfica
@@ -51,33 +51,6 @@ def generate_tree(input_file):
     print(f"Árbol guardado como {output_file}.png")
 
 
-def generate_abc(input_file):
-    """Genera el archivo ABC a partir de un archivo de entrada."""
-    input_stream = FileStream(input_file, encoding='utf-8')
-    lexer = Scanner(input_stream)
-    tokens = CommonTokenStream(lexer)
-    parser = Parser(tokens)
-    parse_tree = parser.partitura()
-    print(parse_tree.toStringTree(recog=parser))
-
-
-    walker = ParseTreeWalker()
-    listener = Listener()
-
-    walker.walk(listener, parse_tree)
-
-    abc_output = generar_abc(listener.obra)
-
-    if not abc_output.strip():
-        print("Advertencia: No se generó contenido en el archivo ABC. Verifica el archivo de entrada o la gramática.")
-
-    output_file = input_file.replace('.txt', '.abc')
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(abc_output)
-
-    print(f"Archivo ABC generado: {output_file}")
-
-
 def main():
     """Punto de entrada para los comandos partitune."""
     if len(sys.argv) != 3:
@@ -92,6 +65,7 @@ def main():
     if mode == "--tree":
         generate_tree(input_file)
     elif mode == "--abc":
+        # Llama directamente a la función que genera el ABC en generacion.py
         generate_abc(input_file)
     else:
         print("Modo no reconocido. Usa --tree o --abc.")
