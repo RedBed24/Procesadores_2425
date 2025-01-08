@@ -22,11 +22,11 @@ def _duracion_to_abc(duracion: Duracion) -> str:
     Se utiliza un mapeo para transformar duraciones musicales a su formato en ABC.
     """
     duracion_map = {
-        Duracion.SEMIFUSA: "/32",
-        Duracion.FUSA: "/16",
-        Duracion.SEMICORCHEA: "/8",
-        Duracion.CORCHEA: "/2",
-        Duracion.NEGRA: "",
+        Duracion.SEMIFUSA: "1/16",
+        Duracion.FUSA: "1/8",
+        Duracion.SEMICORCHEA: "1/4",
+        Duracion.CORCHEA: "1/2",
+        Duracion.NEGRA: "1",
         Duracion.BLANCA: "2",
         Duracion.REDONDA: "4",
     }
@@ -224,7 +224,8 @@ def generar_abc(obra: Obra) -> str:
         "X:1",  # Número de referencia asigna 1
         f"T:{obra.nombre}",  # Título de la obra
         f"M:{_parse_compas(obra.compas)}",  # Compás de la obra
-        f"K:{_parse_clave(obra.clave, obra.armadura)}"  # Clave y armadura de la obra
+        f"K:{_parse_clave(obra.clave, obra.armadura)}",  # Clave y armadura de la obra
+        "L:1",  # Forzar longitud de las notas
     ]
     contexto_inicial = (obra.clave, obra.compas, obra.armadura)
     abc_cuerpo = _procesar_bloque(obra.bloque_notas, contexto_inicial)
