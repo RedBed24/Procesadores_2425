@@ -1,3 +1,4 @@
+from fractions import Fraction
 from antlr4 import FileStream, CommonTokenStream, ParseTreeWalker
 from .analysis.Scanner import Scanner
 from .analysis.Parser import Parser
@@ -224,41 +225,67 @@ def _elemento_es_nota(elemento:str)->bool:
     notas = [
         "C", "D", "E", "F", "G", "A", "B", "Z"
     ]
-    for n in notas:
-        if n in elemento.upper(): #podría no servir, los modificadores se ponen delante de la nota
-            return True
+    return any(n in elemento.upper() for n in notas)
+
+def _valor_duracion(elemento:str)->float:
+    nums = re.findall(r'\d+', elemento)
+    if not nums:
+        return 1.0
+    numerador = int(nums[0])
+    denominador = int(nums[1]) if len(nums) > 1 else 1
+    return numerador/denominador
+
+def _generar_silencios(decimal):
+    fraccion = Fraction(decimal).limit_denominator(32)
+    if fraccion.numerator == 3:
+        return f"z{fraccion}"
+    if fraccion.numerator > fraccion.denominator:
+        partes = []
+        while fraccion.numerator > fraccion.denominator:
+            partes.append(f"z1")
+            fraccion -= Fraction(fraccion.denominator, fraccion.denominator)
+        if fraccion.numerator > 0:
+            partes.append(f"z{fraccion}")
+        return " ".join(partes)
+    return f"z{fraccion}"
 
 def _generar_lineas_divisorias(abc_cuerpo:str, obra_compas:Compas)-> str:
-    pulsos, total = obra_compas.value.split("/")
-    pulsos = int(pulsos)
-    total = int(total)
+    pulsos = int(obra_compas.value.split("/")[0])
     pulsos_restantes:float = pulsos
-    lineas = abc_cuerpo.split("\n")
     new_abc_cuerpo =''
-    for linea in lineas:
+
+    for linea in abc_cuerpo.split("\n"):
         if linea.startswith('M:'):
-            pulsos, total = linea.split(":")[1].split("/")
-            pulsos = int(pulsos)
-            total = int(total)
+            pulsos =  int(linea.split(":")[1].split("/")[0])
+            pulsos_restantes = pulsos
+            new_abc_cuerpo += linea + "\n"
         elif linea.startswith('K:'):
-            continue
+            new_abc_cuerpo += linea + "\n"
         else:
             for elemento in linea.split(" "): # es un bloque?
-                if _elemento_es_nota(elemento): #nota = F1/4
-                    #coger numeros del elemento, que es la duracion
-                    nums = re.findall(r'\d', elemento)
-                    numerador = int(nums[0])
-                    denominador = int(nums[1]) if len(nums) > 1 else 1
-                    pulsos_restantes -= numerador/denominador
-                    if pulsos_restantes == 0:
-                        new_abc_cuerpo += elemento + " | "
+                if not _elemento_es_nota(elemento):
+                    if elemento == ':|':
+                        new_abc_cuerpo += f"{_generar_silencios(pulsos_restantes)} " 
                         pulsos_restantes = pulsos
-                    else:
-                        new_abc_cuerpo += elemento + " "
-                else:
                     new_abc_cuerpo += elemento + " "
-        new_abc_cuerpo += linea + "\n"
-
+                    continue
+                #si es nota, coger numeros del elemento, que es la duracion
+                valor_nota = _valor_duracion(elemento)
+                if valor_nota > pulsos:
+                    valor_nota = pulsos_restantes
+                    
+                if pulsos_restantes - valor_nota < 0: # nota no cabe en compas
+                    new_abc_cuerpo += f"{_generar_silencios(pulsos_restantes)} | "
+                    pulsos_restantes = pulsos
+                if pulsos_restantes - valor_nota == 0: # justo
+                    new_abc_cuerpo += f"{elemento} | "
+                    pulsos_restantes = pulsos
+                else: # nota cabe en compas
+                    new_abc_cuerpo += elemento + " "
+                    pulsos_restantes -= valor_nota
+            new_abc_cuerpo += "\n"
+    print(repr(new_abc_cuerpo))
+    return new_abc_cuerpo
 
 def generar_abc(obra: Obra) -> str:
     """
