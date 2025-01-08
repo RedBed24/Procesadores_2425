@@ -14,6 +14,7 @@ from .partitune.armadura import Armadura
 from .partitune.modificador import Modificador
 from .partitune.fragmento import Fragmento
 from .partitune.modificador_armadura import ModificadorArmadura
+import re
 
 
 def _duracion_to_abc(duracion: Duracion) -> str:
@@ -211,7 +212,44 @@ def _procesar_bloque(bloque_notas: list, context: tuple) -> str:
                 
     return " ".join(resultado)
 
+def _elemento_es_nota(elemento:str)->bool:
+    notas = [
+        "C", "D", "E", "F", "G", "A", "B", "Z"
+    ]
+    for n in notas:
+        if n in elemento.upper(): #podría no servir, los modificadores se ponen delante de la nota
+            return True
 
+def _generar_lineas_divisorias(abc_cuerpo:str, obra_compas:Compas)-> str:
+    pulsos, total = obra_compas.value.split("/")
+    pulsos = int(pulsos)
+    total = int(total)
+    pulsos_restantes:float = pulsos
+    lineas = abc_cuerpo.split("\n")
+    new_abc_cuerpo =''
+    for linea in lineas:
+        if linea.startswith('M:'):
+            pulsos, total = linea.split(":")[1].split("/")
+            pulsos = int(pulsos)
+            total = int(total)
+        elif linea.startswith('K:'):
+            continue
+        else:
+            for elemento in linea.split(" "): # es un bloque?
+                if _elemento_es_nota(elemento): #nota = F1/4
+                    #coger numeros del elemento, que es la duracion
+                    nums = re.findall(r'\d', elemento)
+                    numerador = int(nums[0])
+                    denominador = int(nums[1]) if len(nums) > 1 else 1
+                    pulsos_restantes -= numerador/denominador
+                    if pulsos_restantes == 0:
+                        new_abc_cuerpo += elemento + " | "
+                        pulsos_restantes = pulsos
+                    else:
+                        new_abc_cuerpo += elemento + " "
+                else:
+                    new_abc_cuerpo += elemento + " "
+        new_abc_cuerpo += linea + "\n"
 
 
 def generar_abc(obra: Obra) -> str:
@@ -229,6 +267,7 @@ def generar_abc(obra: Obra) -> str:
     ]
     contexto_inicial = (obra.clave, obra.compas, obra.armadura)
     abc_cuerpo = _procesar_bloque(obra.bloque_notas, contexto_inicial)
+    #### generar lineas divisorias(abc_cuerpo, obra.compas)
     abc_lines.append(abc_cuerpo)
     return "\n".join(abc_lines)
 
