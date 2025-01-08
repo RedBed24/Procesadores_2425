@@ -17,20 +17,32 @@ from .partitune.modificador_armadura import ModificadorArmadura
 import re
 
 
-def _duracion_to_abc(duracion: Duracion) -> str:
+def _duracion_to_abc(nota: Nota | None, duracion: Duracion) -> str:
     """
     Convierte un objeto Duracion en su representación de notación ABC.
     Se utiliza un mapeo para transformar duraciones musicales a su formato en ABC.
     """
-    duracion_map = {
-        Duracion.SEMIFUSA: "1/16",
-        Duracion.FUSA: "1/8",
-        Duracion.SEMICORCHEA: "1/4",
-        Duracion.CORCHEA: "1/2",
-        Duracion.NEGRA: "1",
-        Duracion.BLANCA: "2",
-        Duracion.REDONDA: "4",
-    }
+    if nota and nota.puntillo:
+        duracion_map = {
+            Duracion.SEMIFUSA: "3/32",
+            Duracion.FUSA: "3/16",
+            Duracion.SEMICORCHEA: "3/8",
+            Duracion.CORCHEA: "3/4",
+            Duracion.NEGRA: "3/2",
+            Duracion.BLANCA: "3",
+            Duracion.REDONDA: "6",
+        }
+    else:
+        duracion_map = {
+            Duracion.SEMIFUSA: "1/16",
+            Duracion.FUSA: "1/8",
+            Duracion.SEMICORCHEA: "1/4",
+            Duracion.CORCHEA: "1/2",
+            Duracion.NEGRA: "1",
+            Duracion.BLANCA: "2",
+            Duracion.REDONDA: "4",
+        }
+
     # Se devuelve la cadena correspondiente a la duración dada.
     return duracion_map.get(duracion, "")
 
@@ -63,10 +75,6 @@ def _procesar_nota(nota: Nota) -> str:
     elif nota.octava.name == "GRAVE":
         base += ","
 
-    # Añadir puntillo a la nota si corresponde.
-    if nota.puntillo:
-        base += "."
-
     # Se devuelve la concatenación del modificador con la base ajustada.
     return mod + base
 
@@ -81,10 +89,10 @@ def _procesar_secuencia(secuencia: Secuencia) -> str:
     for nota in secuencia.lista_notas:
         if nota is None:
             # Si la nota es None, se trata de un silencio (pausa).
-            notas_abc.append(f"z{_duracion_to_abc(secuencia.duracion)}")
+            notas_abc.append(f"z{_duracion_to_abc(nota, secuencia.duracion)}")
         else:
             # Si es una nota, se procesa con su duración.
-            notas_abc.append(f"{_procesar_nota(nota)}{_duracion_to_abc(secuencia.duracion)}")
+            notas_abc.append(f"{_procesar_nota(nota)}{_duracion_to_abc(nota, secuencia.duracion)}")
     # Se unen todas las notas procesadas en una sola cadena separada por espacios.
     return " ".join(notas_abc)
 
@@ -114,9 +122,9 @@ def _procesar_ligadura(ligadura: Ligadura) -> str:
         # Procesar cada nota en la secuencia.
         notas_abc = " ".join(
             # Si la nota es válida, se procesa normalmente.
-            f"{_procesar_nota(nota)}{_duracion_to_abc(secuencia.duracion)}" if nota
+            f"{_procesar_nota(nota)}{_duracion_to_abc(nota, secuencia.duracion)}" if nota
             # Si es silencio, se marca con 'z'.
-            else f"z{_duracion_to_abc(secuencia.duracion)}"
+            else f"z{_duracion_to_abc(nota, secuencia.duracion)}"
             for nota in secuencia.lista_notas
         )
         # Se envuelve la secuencia procesada entre paréntesis.
@@ -263,7 +271,7 @@ def generar_abc(obra: Obra) -> str:
         f"T:{obra.nombre}",  # Título de la obra
         f"M:{_parse_compas(obra.compas)}",  # Compás de la obra
         f"K:{_parse_clave(obra.clave, obra.armadura)}",  # Clave y armadura de la obra
-        "L:1",  # Forzar longitud de las notas
+        "L:1/4",  # Forzar valor referencia notas a negra
     ]
     contexto_inicial = (obra.clave, obra.compas, obra.armadura)
     abc_cuerpo = _procesar_bloque(obra.bloque_notas, contexto_inicial)
