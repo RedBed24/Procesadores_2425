@@ -1,7 +1,7 @@
 lexer grammar Scanner;
 
 @header {
-    from ..python.utils.logger import logger
+    from ..utils.logger import logger
 }
 
 options {
