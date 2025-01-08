@@ -1,11 +1,16 @@
 lexer grammar Scanner;
 
+@header {
+    from python.utils.logger import logger
+}
+
 options {
 	caseInsensitive = true;
 }
 
 COMPAS_DURACION: '2/4' | '3/4' | '4/4' | '6/8';
-COMPAS_DURATION_ERROR: [0-9]+ '/' [0-9]+ {print(f"ERROR: Duracion de compas no valida, linea {self.line}, columna {self.column}")};
+COMPAS_DURATION_ERROR: [0-9]+ '/' [0-9]+ {logger.error("Duracion de compas no valida", self.line, self.column);
+};
 SOSTENIDO: '#';
 PUNTILLO: '.';
 OCTAVA: '\'' | '_';
@@ -27,13 +32,12 @@ COMPAS: 'compas';
 FRAGMENTO: 'fragmento';
 LIGADURA: 'lig';
 ARMADURA: 'armadura';
-ID: [a-z]+; // blas -> b como bemol y las palabra, debería ser: blas como palabra
-// en parser, necesitamos token FRAGMENTO, aquí no aparece... no podemos tener un reconocedor de
-// "palabra" " el personaje \"pepito\" "
+ID: [a-z]+; 
 TITULO: '"' (~["])* '"';
-TITULO_ERROR: '"' [.\n\r\t]* {print(f"Error: Titulo no cerrado, linea {self.line}, columna {self.column}");}->skip;
-
+TITULO_ERROR: '"' [.\n\r\t]* {logger.error("Titulo no cerrado", self.line, self.column);
+} -> skip;
 COMMENT: '/*' .*? '*/' -> skip;
-BAD_COMMENT: '/*' .*? {print(f"ERROR: Comentario sin cerrar, linea {self.line}, columna {self.column}")} -> skip;
+BAD_COMMENT: '/*' .*? {logger.error("Comentario sin cerrar", self.line, self.column);
+} -> skip;
 WS: [ \t\n\r]+ -> skip;
 
