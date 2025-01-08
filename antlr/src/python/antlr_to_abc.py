@@ -1,5 +1,5 @@
 import re
-from python.utils.logger import logger
+from .utils.logger import logger
 from antlr4 import *
 
 

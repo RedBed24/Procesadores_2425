@@ -9,7 +9,7 @@ from .antlr_to_abc import antlr_to_abc  # Importa la función de transcripción 
 from .listener import Listener  # Importa el Listener
 from .generacion import generar_abc
 
-from python.utils.logger import logger
+from .utils.logger import logger
 
 
 # Para visualización gráfica
