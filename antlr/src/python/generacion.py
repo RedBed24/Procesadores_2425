@@ -267,7 +267,7 @@ def generar_abc(obra: Obra) -> str:
     ]
     contexto_inicial = (obra.clave, obra.compas, obra.armadura)
     abc_cuerpo = _procesar_bloque(obra.bloque_notas, contexto_inicial)
-    #### generar lineas divisorias(abc_cuerpo, obra.compas)
+    abc_cuerpo = _generar_lineas_divisorias(abc_cuerpo, obra.compas)
     abc_lines.append(abc_cuerpo)
     return "\n".join(abc_lines)
 
