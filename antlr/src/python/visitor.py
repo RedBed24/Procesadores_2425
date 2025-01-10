@@ -23,6 +23,11 @@ from .partitune.fragmento import (
 
 
 class Visitor(ParserVisitor):
+    def __init__(self):
+        super().__init__()
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
+
     def _obtener_especificacion(
         self, ctx: Parser.ObraContext | Parser.FragmentoContext
     ) -> tuple[Optional[Clave], Optional[Compas], Optional[Armadura]]:
@@ -42,6 +47,19 @@ class Visitor(ParserVisitor):
         armaduras: list[Armadura] = list(
             filter(lambda x: isinstance(x, Armadura), especificacion)
         )
+
+        for clave in claves[1:]:
+            self.warnings.append(
+                f"Warning: clave duplicada en {ctx.especificacion(0).start.line}:{ctx.especificacion(0).start.column}"
+            )
+        for compas in compases[1:]:
+            self.warnings.append(
+                f"Warning: compás duplicado en {ctx.especificacion(0).start.line}:{ctx.especificacion(0).start.column}"
+            )
+        for armadura in armaduras[1:]:
+            self.warnings.append(
+                f"Warning: armadura duplicada en {ctx.especificacion(0).start.line}:{ctx.especificacion(0).start.column}"
+            )
 
         clave: Optional[Clave] = claves[-1] if claves else None
         compas: Optional[Compas] = compases[-1] if compases else None
@@ -99,8 +117,8 @@ class Visitor(ParserVisitor):
         )
 
         if hay_bemoles and hay_sostenidos:
-            raise ValueError(
-                "No se pueden mezclar bemoles y sostenidos en una armadura"
+            self.errors.append(
+                f"{ctx.nota_armadura(0).start.line}:{ctx.nota_armadura(0).start.column}: No se pueden mezclar bemoles y sostenidos en una armadura"
             )
 
         notas_base: list[NotaBase] = list(map(lambda x: x[1], notas_armadura))
