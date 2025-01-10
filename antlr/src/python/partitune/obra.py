@@ -7,7 +7,7 @@ from .clave import Clave
 from .secuencia import Secuencia
 from .repeticion import Repeticion
 from .ligadura import Ligadura
-from .fragmento import Fragmento
+from .fragmento import FragmentoFinal, FragmentoLlamado
 
 
 class Obra:
@@ -28,7 +28,7 @@ class ObraSemantica(Obra):
     def __init__(
         self,
         nombre: str,
-        bloque_notas: list[Secuencia | str | Repeticion | Ligadura],
+        bloque_notas: list[Secuencia | FragmentoLlamado | Repeticion | Ligadura],
         clave: Clave = Clave.SOL,
         armadura: Optional[Armadura] = None,
         compas: Compas = Compas.DOSPORCUATRO,
@@ -41,7 +41,7 @@ class ObraFinal(Obra):
     def __init__(
         self,
         nombre: str,
-        bloque_notas: list[Secuencia | Fragmento | Repeticion | Ligadura],
+        bloque_notas: list[Secuencia | FragmentoFinal | Repeticion | Ligadura],
         clave: Clave = Clave.SOL,
         armadura: Optional[Armadura] = None,
         compas: Compas = Compas.DOSPORCUATRO,

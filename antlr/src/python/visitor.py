@@ -14,7 +14,12 @@ from .partitune.nota import Nota
 from .partitune.duracion import Duracion, get_duracion_from_partitune
 from .partitune.modificador import Modificador
 from .partitune.tipo_repeticion import TipoRepeticion
-from .partitune.fragmento import Fragmento, FragmentoSemantico, FragmentoFinal
+from .partitune.fragmento import (
+    Fragmento,
+    FragmentoLlamado,
+    FragmentoSemantico,
+    FragmentoFinal,
+)
 
 
 class Visitor(ParserVisitor):
@@ -127,6 +132,8 @@ class Visitor(ParserVisitor):
         return FragmentoSemantico(
             nombre=nombre,
             bloque_notas=self.visitBloque_notas(ctx.bloque_notas()),
+            linea=ctx.start.line,
+            columna=ctx.start.column,
             clave=clave,
             compas=compas,
             armadura=armadura,
@@ -134,7 +141,7 @@ class Visitor(ParserVisitor):
 
     def visitBloque_notas(
         self, ctx: Parser.Bloque_notasContext
-    ) -> list[Secuencia | str | Repeticion | Ligadura]:
+    ) -> list[Secuencia | FragmentoLlamado | Repeticion | Ligadura]:
         return list(map(lambda elemento: self.visitElemento(elemento), ctx.elemento()))
 
     def visitRepeticion(self, ctx: Parser.RepeticionContext) -> Repeticion:
@@ -157,8 +164,10 @@ class Visitor(ParserVisitor):
             )
         )
 
-    def visitLlamada(self, ctx: Parser.LlamadaContext) -> str:
-        return ctx.ID().getText()
+    def visitLlamada(self, ctx: Parser.LlamadaContext) -> FragmentoLlamado:
+        return FragmentoLlamado(
+            nombre=ctx.ID().getText(), linea=ctx.start.line, columna=ctx.start.column
+        )
 
     def visitSecuencia(self, ctx: Parser.SecuenciaContext):
         duracion: Duracion = get_duracion_from_partitune(ctx.DURACION().getText())
