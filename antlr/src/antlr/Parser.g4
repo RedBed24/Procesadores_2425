@@ -18,6 +18,7 @@ elemento: repeticion | secuencia | ligadura | llamada;
 repeticion: PRINCIPIO_REP? secuencia+ FINAL_REP;
 ligadura: LIGADURA LLAVE_IZQ secuencia+ LLAVE_DER;
 llamada: ID;
-secuencia: DURACION PARENTESIS_IZQ (SILENCIO | nota)+ PARENTESIS_DER;
+secuencia: DURACION PARENTESIS_IZQ (posibles_notas)+ PARENTESIS_DER;
+posibles_notas: nota | SILENCIO;
 modificador: BEMOL | SOSTENIDO | BECUADRO;
 nota: modificador? NOTA_BASE OCTAVA? PUNTILLO?;
