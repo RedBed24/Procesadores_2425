@@ -6,7 +6,7 @@ from graphviz import Digraph
 from .analysis.Parser import Parser  # Importa el Parser
 from .analysis.Scanner import Scanner  # Importa el Scanner
 from .antlr_to_abc import antlr_to_abc  # Importa la función de transcripción a ABC
-from .listener import Listener  # Importa el Listener
+from .visitor import Visitor
 from .generacion import generar_abc
 
 
@@ -60,13 +60,11 @@ def generate_abc(input_file):
     parse_tree = parser.partitura()
     print(parse_tree.toStringTree(recog=parser))
 
+    visitor = Visitor()
 
-    walker = ParseTreeWalker()
-    listener = Listener()
+    obra = visitor.visit(parse_tree)
 
-    walker.walk(listener, parse_tree)
-
-    abc_output = generar_abc(listener.obra)
+    abc_output = generar_abc(obra)
 
     if not abc_output.strip():
         print("Advertencia: No se generó contenido en el archivo ABC. Verifica el archivo de entrada o la gramática.")
