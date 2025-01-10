@@ -14,7 +14,14 @@ from .fragmento import Fragmento
 @dataclass
 class Obra:
     nombre: str
-    bloque_notas: list[Secuencia | Fragmento | Repeticion | Ligadura]
     clave: Clave = Clave.SOL
     armadura: Optional[Armadura] = None
     compas: Compas = Compas.DOSPORCUATRO
+
+
+class ObraSemantica:
+    bloque_notas: list[Secuencia | str | Repeticion | Ligadura]
+
+
+class ObraFinal:
+    bloque_notas: list[Secuencia | Fragmento | Repeticion | Ligadura]
