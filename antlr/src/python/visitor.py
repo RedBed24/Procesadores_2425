@@ -18,8 +18,31 @@ from .partitune.fragmento import Fragmento, FragmentoSemantico, FragmentoFinal
 
 
 class Visitor(ParserVisitor):
-    def __init__(self):
-        super().__init__()
+    def _obtener_especificacion(
+        self, ctx: Parser.ObraContext | Parser.FragmentoContext
+    ) -> tuple[Optional[Clave], Optional[Compas], Optional[Armadura]]:
+        especificacion: list[Clave | Compas | Armadura] = list(
+            map(
+                lambda especificacion: self.visitEspecificacion(especificacion),
+                ctx.especificacion(),
+            )
+        )
+
+        claves: list[Clave] = list(
+            filter(lambda x: isinstance(x, Clave), especificacion)
+        )
+        compases: list[Compas] = list(
+            filter(lambda x: isinstance(x, Compas), especificacion)
+        )
+        armaduras: list[Armadura] = list(
+            filter(lambda x: isinstance(x, Armadura), especificacion)
+        )
+
+        clave: Optional[Clave] = claves[-1] if claves else None
+        compas: Optional[Compas] = compases[-1] if compases else None
+        armadura: Optional[Armadura] = armaduras[-1] if armaduras else None
+
+        return clave, compas, armadura
 
     def visitPartitura(self, ctx: Parser.PartituraContext) -> ObraFinal:
         dict_fragmentos: dict[str, FragmentoSemantico] = {
@@ -40,10 +63,14 @@ class Visitor(ParserVisitor):
     def visitObra(self, ctx: Parser.ObraContext) -> ObraSemantica:
         nombre: str = ctx.TITULO().getText()
 
-        # TODO: especificación
+        clave, compas, armadura = self._obtener_especificacion(ctx)
 
         return ObraSemantica(
-            nombre=nombre, bloque_notas=self.visitBloque_notas(ctx.bloque_notas())
+            nombre=nombre,
+            bloque_notas=self.visitBloque_notas(ctx.bloque_notas()),
+            clave=clave,
+            compas=compas,
+            armadura=armadura,
         )
 
     def visitClave(self, ctx: Parser.ClaveContext) -> Clave:
@@ -95,10 +122,14 @@ class Visitor(ParserVisitor):
     def visitFragmento(self, ctx: Parser.FragmentoContext) -> FragmentoSemantico:
         nombre: str = ctx.ID().getText()
 
-        # TODO: especificación
+        clave, compas, armadura = self._obtener_especificacion(ctx)
 
         return FragmentoSemantico(
-            nombre=nombre, bloque_notas=self.visitBloque_notas(ctx.bloque_notas())
+            nombre=nombre,
+            bloque_notas=self.visitBloque_notas(ctx.bloque_notas()),
+            clave=clave,
+            compas=compas,
+            armadura=armadura,
         )
 
     def visitBloque_notas(
