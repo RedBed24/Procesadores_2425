@@ -57,23 +57,28 @@ def generate_abc(input_file):
     lexer = Scanner(input_stream)
     tokens = CommonTokenStream(lexer)
     parser = Parser(tokens)
-    parse_tree = parser.partitura()
-    print(parse_tree.toStringTree(recog=parser))
-
     visitor = Visitor()
 
-    obra = visitor.visit(parse_tree)
+    try: 
+        parse_tree = parser.partitura()
 
-    abc_output = generar_abc(obra)
+        obra = visitor.visit(parse_tree)
 
-    if not abc_output.strip():
-        print("Advertencia: No se generó contenido en el archivo ABC. Verifica el archivo de entrada o la gramática.")
+        if visitor.warnings:
+            print("Advertencias:")
+            print("\n".join(visitor.warnings))
 
-    output_file = input_file.replace('.txt', '.abc')
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(abc_output)
+        abc_output = generar_abc(obra)
 
-    print(f"Archivo ABC generado: {output_file}")
+        output_file = input_file.replace('.txt', '.abc')
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(abc_output)
+
+        print(f"Archivo ABC generado: {output_file}")
+
+    except Exception as e:
+        print("Error en el archivo de entrada:")
+        print(e)
 
 
 def main():

@@ -1,4 +1,6 @@
 from typing import Optional
+from networkx import DiGraph
+from networkx.algorithms.cycles import simple_cycles
 from .analysis.ParserVisitor import ParserVisitor
 from .analysis.Parser import Parser
 from .partitune.armadura import Armadura, ModificadorArmadura
@@ -67,21 +69,87 @@ class Visitor(ParserVisitor):
 
         return clave, compas, armadura
 
-    def visitPartitura(self, ctx: Parser.PartituraContext) -> ObraFinal:
-        dict_fragmentos: dict[str, FragmentoSemantico] = {
-            fragmento.nombre: fragmento
-            for fragmento in map(
-                lambda fragmento: self.visitFragmento(fragmento), ctx.fragmento()
-            )
-        }
+    def _check_call_graph(
+        self, fragmentos: dict[str, FragmentoSemantico], obra: ObraSemantica
+    ) -> None:
+        grafo_llamadas: DiGraph = DiGraph()
+        grafo_llamadas.add_node(obra.nombre)
 
-        # TODO: sustituir str de fragmento.bloque_notas por Fragmento y cambiar tipo a FragmentoFinal
+        for fragmento in fragmentos:
+            grafo_llamadas.add_node(fragmento)
+
+        for llamadas in filter(
+            lambda elemento: isinstance(elemento, FragmentoLlamado), obra.bloque_notas
+        ):
+            if llamadas.nombre.upper() not in fragmentos:
+                self.errors.append(
+                    f"{llamadas.linea}:{llamadas.columna}: Fragmento '{llamadas.nombre}' no definido"
+                )
+            grafo_llamadas.add_edge(obra.nombre, llamadas.nombre.upper())
+
+        for nombre, fragmento in fragmentos.items():
+            for llamada in filter(
+                lambda elemento: isinstance(elemento, FragmentoLlamado),
+                fragmento.bloque_notas,
+            ):
+                if llamada.nombre.upper() not in fragmentos:
+                    self.errors.append(
+                        f"{llamada.linea}:{llamada.columna}: Fragmento '{llamada.nombre}' no definido"
+                    )
+                grafo_llamadas.add_edge(nombre, llamada.nombre.upper())
+
+        for ciclo in simple_cycles(grafo_llamadas):
+            self.errors.append(
+                f"Error: Ciclo en llamadas de fragmentos: {' -> '.join(ciclo + [ciclo[0]])}"
+            )
+
+    def visitPartitura(self, ctx: Parser.PartituraContext) -> ObraFinal:
+        fragmentos: list[FragmentoSemantico] = list(
+            map(lambda fragmento: self.visitFragmento(fragmento), ctx.fragmento())
+        )
+
+        for i, fragmento in enumerate(fragmentos):
+            for otro_fragmento in fragmentos[i + 1 :]:
+                if fragmento == otro_fragmento:
+                    self.errors.append(
+                        f"{otro_fragmento.linea}:{otro_fragmento.columna}: Fragmento duplicado '{fragmento.nombre}'"
+                    )
 
         obra: ObraSemantica = self.visitObra(ctx.obra())
 
-        # TODO: sustituir str de obra.bloque_notas por Obra y cambiar tipo a ObraFinal
+        dict_fragmentos: dict[str, FragmentoSemantico] = {
+            fragmento.nombre.upper(): fragmento for fragmento in fragmentos
+        }
 
-        return ObraSemantica
+        self._check_call_graph(dict_fragmentos, obra)
+
+        if self.errors:
+            raise ValueError("\n".join(self.errors) + "\n" + "\n".join(self.warnings))
+
+        for fragmento in dict_fragmentos.values():
+            fragmento.bloque_notas = list(
+                map(
+                    lambda elemento: (
+                        dict_fragmentos[elemento.nombre.upper()]
+                        if isinstance(elemento, FragmentoLlamado)
+                        else elemento
+                    ),
+                    fragmento.bloque_notas,
+                )
+            )
+
+        obra.bloque_notas = list(
+            map(
+                lambda elemento: (
+                    dict_fragmentos[elemento.nombre.upper()]
+                    if isinstance(elemento, FragmentoLlamado)
+                    else elemento
+                ),
+                obra.bloque_notas,
+            )
+        )
+
+        return obra
 
     def visitObra(self, ctx: Parser.ObraContext) -> ObraSemantica:
         nombre: str = ctx.TITULO().getText()
