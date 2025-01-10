@@ -1,16 +1,16 @@
 from .analysis.ParserListener import ParserListener
 from .analysis.Parser import Parser
 from .partitune.octava import Octava, get_octava_from_partitune
-from .partitune.nota_base import get_nota_base_from_partitune
-from .partitune.compas import get_compas_from_partitune
+from .partitune.nota_base import NotaBase, get_nota_base_from_partitune
+from .partitune.compas import Compas, get_compas_from_partitune
 from .partitune.secuencia import Secuencia
-from .partitune.clave import get_clave_from_partitune
+from .partitune.clave import Clave, get_clave_from_partitune
 from .partitune.obra import Obra
 from .partitune.repeticion import Repeticion
 from .partitune.ligadura import Ligadura
 from .partitune.nota import Nota
-from .partitune.duracion import get_duracion_from_partitune
-from .partitune.modificador import get_modificador_from_partitune
+from .partitune.duracion import Duracion, get_duracion_from_partitune
+from .partitune.modificador import Modificador, get_modificador_from_partitune
 from .partitune.tipo_repeticion import TipoRepeticion
 from .partitune.fragmento import Fragmento
 
