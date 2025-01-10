@@ -1,5 +1,4 @@
 from __future__ import annotations
-from dataclasses import dataclass
 from typing import Optional
 
 from .armadura import Armadura
@@ -11,17 +10,41 @@ from .ligadura import Ligadura
 from .fragmento import Fragmento
 
 
-@dataclass
 class Obra:
-    nombre: str
-    clave: Clave = Clave.SOL
-    armadura: Optional[Armadura] = None
-    compas: Compas = Compas.DOSPORCUATRO
+    def __init__(
+        self,
+        nombre: str,
+        clave: Clave = Clave.SOL,
+        armadura: Optional[Armadura] = None,
+        compas: Compas = Compas.DOSPORCUATRO,
+    ):
+        self.nombre = nombre
+        self.clave = clave
+        self.armadura = armadura
+        self.compas = compas
 
 
-class ObraSemantica:
-    bloque_notas: list[Secuencia | str | Repeticion | Ligadura]
+class ObraSemantica(Obra):
+    def __init__(
+        self,
+        nombre: str,
+        bloque_notas: list[Secuencia | str | Repeticion | Ligadura],
+        clave: Clave = Clave.SOL,
+        armadura: Optional[Armadura] = None,
+        compas: Compas = Compas.DOSPORCUATRO,
+    ):
+        super().__init__(nombre, clave, armadura, compas)
+        self.bloque_notas = bloque_notas
 
 
-class ObraFinal:
-    bloque_notas: list[Secuencia | Fragmento | Repeticion | Ligadura]
+class ObraFinal(Obra):
+    def __init__(
+        self,
+        nombre: str,
+        bloque_notas: list[Secuencia | Fragmento | Repeticion | Ligadura],
+        clave: Clave = Clave.SOL,
+        armadura: Optional[Armadura] = None,
+        compas: Compas = Compas.DOSPORCUATRO,
+    ):
+        super().__init__(nombre, clave, armadura, compas)
+        self.bloque_notas = bloque_notas
