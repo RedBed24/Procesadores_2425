@@ -7,7 +7,7 @@ options {
 partitura: fragmento* obra EOF;
 obra: OBRA TITULO LLAVE_IZQ especificacion* bloque_notas LLAVE_DER;
 
-especificacion: (clave | compas | armadura);
+especificacion: clave | compas | armadura;
 clave: CLAVE IGUAL NOTA_BASE;
 compas: COMPAS IGUAL COMPAS_DURACION;
 armadura: ARMADURA IGUAL notas_armadura;
