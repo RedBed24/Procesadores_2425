@@ -9,6 +9,8 @@ from .antlr_to_abc import antlr_to_abc  # Importa la función de transcripción 
 from .visitor import Visitor
 from .generacion import generar_abc
 
+from .utils.logger import logger
+
 
 # Para visualización gráfica
 def build_tree(parser, node, graph, parent=None):
@@ -33,7 +35,7 @@ def build_tree(parser, node, graph, parent=None):
 def generate_tree(input_file):
     """Genera un árbol de sintaxis y lo guarda como PNG."""
     # Utiliza input_file en lugar de sys.argv[1]
-    input_stream = FileStream(input_file, encoding='utf-8')
+    input_stream = FileStream(input_file, encoding="utf-8")
     lexer = Scanner(input_stream)
     tokens = CommonTokenStream(lexer)
     parser = Parser(tokens)
@@ -41,19 +43,19 @@ def generate_tree(input_file):
     parse_tree = parser.partitura()
 
     # Crear representación en Graphviz
-    graph = Digraph(format='png')
-    graph.attr(rankdir='TB')  # Dirección del árbol
+    graph = Digraph(format="png")
+    graph.attr(rankdir="TB")  # Dirección del árbol
     build_tree(parser, parse_tree, graph)
 
     # Renderizar el grafo
     output_file = "parse_tree"
     graph.render(output_file, view=True)
-    print(f"Árbol guardado como {output_file}.png")
+    logger.info(f"Árbol guardado como {output_file}.png")
 
 
 def generate_abc(input_file):
     """Genera el archivo ABC a partir de un archivo de entrada."""
-    input_stream = FileStream(input_file, encoding='utf-8')
+    input_stream = FileStream(input_file, encoding="utf-8")
     lexer = Scanner(input_stream)
     tokens = CommonTokenStream(lexer)
     parser = Parser(tokens)
@@ -61,33 +63,34 @@ def generate_abc(input_file):
 
     try: 
         parse_tree = parser.partitura()
+        logger.debug(parse_tree.toStringTree(recog=parser))
 
         obra = visitor.visit(parse_tree)
 
         if visitor.warnings:
-            print("Advertencias:")
-            print("\n".join(visitor.warnings))
+            logger.warning("Advertencias:")
+            logger.warning("\n".join(visitor.warnings))
 
         abc_output = generar_abc(obra)
 
-        output_file = input_file.replace('.txt', '.abc')
-        with open(output_file, 'w', encoding='utf-8') as f:
+        output_file = input_file.replace(".txt", ".abc")
+        with open(output_file, "w", encoding="utf-8") as f:
             f.write(abc_output)
 
-        print(f"Archivo ABC generado: {output_file}")
+        logger.info(f"Archivo ABC generado: {output_file}")
 
     except Exception as e:
-        print("Error en el archivo de entrada:")
-        print(e)
+        logger.error("Error en el archivo de entrada:")
+        logger.error(e)
 
 
 def main():
     """Punto de entrada para los comandos partitune."""
     if len(sys.argv) != 3:
-        print("Uso: partitune <modo> <archivo>")
-        print("Modos disponibles:")
-        print("  --tree : Generar el árbol de sintaxis como PNG")
-        print("  --abc  : Generar el archivo en formato ABC")
+        logger.error("Uso: partitune <modo> <archivo>")
+        logger.info(
+            "Modos disponibles:\n  --tree : Generar el árbol de sintaxis como PNG\n  --abc  : Generar el archivo en formato ABC"
+        )
         sys.exit(1)
 
     mode, input_file = sys.argv[1], sys.argv[2]
@@ -97,7 +100,7 @@ def main():
     elif mode == "--abc":
         generate_abc(input_file)
     else:
-        print("Modo no reconocido. Usa --tree o --abc.")
+        logger.error("Modo no reconocido. Usa --tree o --abc.")
         sys.exit(1)
 
 

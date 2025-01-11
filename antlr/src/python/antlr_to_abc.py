@@ -1,10 +1,12 @@
 import re
+from .utils.logger import logger
 from antlr4 import *
+
 
 def antlr_to_abc(parse_tree):
     """
     Transforma un árbol de sintaxis generado por ANTLR en una representación ABC.
-    
+
     :param parse_tree: Árbol de sintaxis parseado por ANTLR.
     :return: String en formato ABC.
     """
@@ -15,15 +17,24 @@ def antlr_to_abc(parse_tree):
 
     # Traducciones de notas y duraciones
     note_map = {
-        "DO": "C", "RE": "D", "MI": "E", "FA": "F", "SOL": "G", "LA": "A", "SI": "B"
+        "DO": "C",
+        "RE": "D",
+        "MI": "E",
+        "FA": "F",
+        "SOL": "G",
+        "LA": "A",
+        "SI": "B",
     }
     duration_map = {
-        "sf": "/8", "f": "1/8", "sc": "1/16", "c": "1/4",
-        "n": "", "bl": "2", "r": "4"
+        "sf": "/8",
+        "f": "1/8",
+        "sc": "1/16",
+        "c": "1/4",
+        "n": "",
+        "bl": "2",
+        "r": "4",
     }
-    clave_map = {
-        "SOL": "G", "FA": "F", "DO": "C"
-    }
+    clave_map = {"SOL": "G", "FA": "F", "DO": "C"}
 
     def clean_label(label):
         """Limpia y estructura correctamente los nodos complejos."""
@@ -40,12 +51,14 @@ def antlr_to_abc(parse_tree):
 
     def process_secuencia(node):
         """Procesa una secuencia, incluyendo duraciones y notas dentro de paréntesis."""
-        print("Procesando secuencia...")  # Depuración
+        logger.debug("Procesando secuencia...")  # Depuración
         elementos = []
 
         for child in node.getChildren():
             label, content = clean_label(child.getText())
-            print(f"  Nodo de secuencia: {label}, contenido: {content}")  # Depuración
+            logger.debug(
+                f"Nodo de secuencia: {label}, contenido: {content}"
+            )  # Depuración
 
             if label in duration_map:
                 duration = duration_map.get(label, "")
@@ -61,12 +74,14 @@ def antlr_to_abc(parse_tree):
     def process_notas_y_estructuras(node):
         """Procesa notas, repeticiones, ligaduras y otras estructuras generales."""
         elementos = []
-        if not hasattr(node, 'getChildren') or node.getChildCount() == 0:
+        if not hasattr(node, "getChildren") or node.getChildCount() == 0:
             return ""  # Devolver una cadena vacía si es un nodo terminal
 
         for child in node.getChildren():
             label, content = clean_label(child.getText())
-            print(f"Procesando nodo: {label}, contenido: {content}")  # Depuración
+            logger.debug(
+                f"Procesando nodo: {label}, contenido: {content}"
+            )  # Depuración
 
             if label.upper == "SECUENCIA":
                 # Procesar secuencia
@@ -76,13 +91,17 @@ def antlr_to_abc(parse_tree):
 
             elif label.upper == "REPETICION":
                 # Manejo de repeticiones
-                inner_bloque = process_notas_y_estructuras(child.getChild(1))  # Nodo dentro de |: y :|
+                inner_bloque = process_notas_y_estructuras(
+                    child.getChild(1)
+                )  # Nodo dentro de |: y :|
                 if inner_bloque:
                     elementos.append(f"|: {inner_bloque} :|")
 
             elif label.upper == "LIGADURA":
                 # Manejo de ligaduras
-                ligadura = process_notas_y_estructuras(child.getChild(1))  # Contenido dentro de ligadura
+                ligadura = process_notas_y_estructuras(
+                    child.getChild(1)
+                )  # Contenido dentro de ligadura
                 if ligadura:
                     elementos.append(f"({ligadura})")
 
@@ -90,11 +109,13 @@ def antlr_to_abc(parse_tree):
 
     def process_bloque_notas(node):
         """Procesa el bloque de notas que contiene múltiples elementos."""
-        print("Procesando bloque de notas...")  # Depuración
+        logger.debug("Procesando bloque de notas...")  # Depuración
         elementos = []
         for child in node.getChildren():
             label, content = clean_label(child.getText())
-            print(f"  Nodo de bloque_notas: {label}, contenido: {content}")  # Depuración
+            logger.debug(
+                f"Nodo de bloque_notas: {label}, contenido: {content}"
+            )  # Depuración
             if label.upper == "ELEMENTO":
                 for sub_elemento in child.getChildren():
                     sub_elemento_content = process_notas_y_estructuras(sub_elemento)
@@ -110,9 +131,11 @@ def antlr_to_abc(parse_tree):
 
         for child in node.getChildren():
             label, content = clean_label(child.getText())
-            print(f"Procesando nodo de obra: {label}, contenido: {content}")  # Depuración
+            logger.debug(
+                f"Procesando nodo de obra: {label}, contenido: {content}"
+            )  # Depuración
 
-            if label.startswith("\"") and label.endswith("\""):
+            if label.startswith('"') and label.endswith('"'):
                 titulo = label.strip('"')
                 abc_output.append(f"T: {titulo}")
             elif label.upper() == "COMPAS":
@@ -129,8 +152,7 @@ def antlr_to_abc(parse_tree):
                 if bloque_notas_content:
                     abc_output.append(bloque_notas_content)
 
-    print("Estructura del árbol:")
-    print(parse_tree.toStringTree())  # Depuración
+    logger.debug("Estructura del árbol:\n%s", parse_tree.toStringTree())  # Depuración
 
     for child in parse_tree.getChildren():
         label, _ = clean_label(child.getText())
