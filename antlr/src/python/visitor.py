@@ -1,6 +1,7 @@
 from typing import Optional
 from networkx import DiGraph
 from networkx.algorithms.cycles import simple_cycles
+from networkx.algorithms.dag import descendants
 from .analysis.ParserVisitor import ParserVisitor
 from .analysis.Parser import Parser
 from .partitune.armadura import Armadura, ModificadorArmadura
@@ -102,6 +103,13 @@ class Visitor(ParserVisitor):
             self.errors.append(
                 f"Error: Ciclo en llamadas de fragmentos: {' -> '.join(ciclo + [ciclo[0]])}"
             )
+
+        fragmentos_usados = descendants(grafo_llamadas, obra.nombre)
+
+        for nombre, fragmento in filter(
+            lambda x: x[0] not in fragmentos_usados, fragmentos.items()
+        ):
+            self.warnings.append(f"Warning: Fragmento '{nombre}' {fragmento.linea}:{fragmento.columna} no usado")
 
     def visitPartitura(self, ctx: Parser.PartituraContext) -> ObraFinal:
         fragmentos: list[FragmentoSemantico] = list(
