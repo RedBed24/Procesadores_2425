@@ -34,11 +34,12 @@ class Visitor(ParserVisitor):
     def _obtener_especificacion(
         self, ctx: Parser.ObraContext | Parser.FragmentoContext
     ) -> tuple[Optional[Clave], Optional[Compas], Optional[Armadura]]:
-        especificacion: list[Clave | Compas | Armadura] = list(
+        especificacion: list[Clave | Compas | Armadura] = filter(
+            lambda x: x is not None,
             map(
                 lambda especificacion: self.visitEspecificacion(especificacion),
                 ctx.especificacion(),
-            )
+            ),
         )
 
         claves: list[Clave] = list(
@@ -109,7 +110,9 @@ class Visitor(ParserVisitor):
         for nombre, fragmento in filter(
             lambda x: x[0] not in fragmentos_usados, fragmentos.items()
         ):
-            self.warnings.append(f"Warning: Fragmento '{nombre}' {fragmento.linea}:{fragmento.columna} no usado")
+            self.warnings.append(
+                f"Warning: Fragmento '{nombre}' {fragmento.linea}:{fragmento.columna} no usado"
+            )
 
     def visitPartitura(self, ctx: Parser.PartituraContext) -> ObraFinal:
         fragmentos: list[FragmentoSemantico] = list(
@@ -172,13 +175,19 @@ class Visitor(ParserVisitor):
             armadura=armadura,
         )
 
-    def visitClave(self, ctx: Parser.ClaveContext) -> Clave:
-        return get_clave_from_partitune(ctx.NOTA_BASE().getText())
+    def visitClave(self, ctx: Parser.ClaveContext) -> Clave | None:
+        try:
+            return get_clave_from_partitune(ctx.NOTA_BASE().getText())
+        except ValueError as e:
+            self.errors.append(
+                f"{ctx.NOTA_BASE().start.line}:{ctx.NOTA_BASE().start.column}: {e}"
+            )
+            return None
 
     def visitCompas(self, ctx: Parser.CompasContext) -> Compas:
         return get_compas_from_partitune(ctx.COMPAS_DURACION().getText())
 
-    def visitArmadura(self, ctx: Parser.ArmaduraContext) -> Armadura:
+    def visitArmadura(self, ctx: Parser.ArmaduraContext) -> Armadura | None:
         notas_armadura: list[tuple[ModificadorArmadura, NotaBase]] = list(
             map(
                 lambda nota_armadura: self.visitNota_armadura(nota_armadura),
@@ -199,14 +208,20 @@ class Visitor(ParserVisitor):
 
         notas_base: list[NotaBase] = list(map(lambda x: x[1], notas_armadura))
 
-        return Armadura(
-            tipo_modificacion=(
-                ModificadorArmadura.BEMOL
-                if hay_bemoles
-                else ModificadorArmadura.SOSTENIDO
-            ),
-            notas=notas_base,
-        )
+        try:
+            return Armadura(
+                tipo_modificacion=(
+                    ModificadorArmadura.BEMOL
+                    if hay_bemoles
+                    else ModificadorArmadura.SOSTENIDO
+                ),
+                notas=notas_base,
+            )
+        except ValueError as e:
+            self.errors.append(
+                f"{ctx.nota_armadura(0).start.line}:{ctx.nota_armadura(0).start.column}: {e}"
+            )
+            return None
 
     def visitNota_armadura(
         self, ctx: Parser.Nota_armaduraContext
