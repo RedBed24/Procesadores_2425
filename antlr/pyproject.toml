@@ -41,8 +41,5 @@ dev-mode-dirs = ["src/main/python"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/main/python/partitune"]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
 [project.scripts]
 partitune = "partitune.__main__:main"
