@@ -19,9 +19,9 @@ class Obra:
         compas: Compas = Compas.DOSPORCUATRO,
     ):
         self.nombre = nombre
-        self.clave = clave
+        self.clave = clave if clave else Clave.SOL
         self.armadura = armadura
-        self.compas = compas
+        self.compas = compas if compas else Compas.DOSPORCUATRO
 
 
 class ObraSemantica(Obra):
