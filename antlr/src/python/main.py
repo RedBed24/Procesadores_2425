@@ -5,9 +5,9 @@ from graphviz import Digraph
 
 from .analysis.Parser import Parser  # Importa el Parser
 from .analysis.Scanner import Scanner  # Importa el Scanner
-from .antlr_to_abc import antlr_to_abc  # Importa la función de transcripción a ABC
 from .visitor import Visitor
 from .generacion import generar_abc
+
 
 from .utils.logger import logger
 
@@ -98,6 +98,7 @@ def main():
     if mode == "--tree":
         generate_tree(input_file)
     elif mode == "--abc":
+        # Llama directamente a la función que genera el ABC en generacion.py
         generate_abc(input_file)
     else:
         logger.error("Modo no reconocido. Usa --tree o --abc.")
