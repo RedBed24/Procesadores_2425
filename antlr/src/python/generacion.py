@@ -2,7 +2,7 @@ from fractions import Fraction
 from antlr4 import FileStream, CommonTokenStream, ParseTreeWalker
 from .analysis.Scanner import Scanner
 from .analysis.Parser import Parser
-from .listener import Listener
+from .visitor import Visitor
 from .partitune.obra import Obra
 from .partitune.secuencia import Secuencia
 from .partitune.repeticion import Repeticion
@@ -305,30 +305,3 @@ def generar_abc(obra: Obra) -> str:
     abc_cuerpo = _generar_lineas_divisorias(abc_cuerpo, obra.compas)
     abc_lines.append(abc_cuerpo)
     return "\n".join(abc_lines)
-
-
-def generate_abc(input_file):
-    """
-    Función principal para leer un archivo, parsearlo y generar su notación ABC.
-    """
-    input_stream = FileStream(input_file, encoding='utf-8')
-    lexer = Scanner(input_stream)
-    tokens = CommonTokenStream(lexer)
-    parser = Parser(tokens)
-    
-    # Iniciar el parseo a partir de la regla 'partitura', obteniendo el árbol de parseo.
-    parse_tree = parser.partitura()
-
-    # Crear una instancia del Listener definido previamente.
-    listener = Listener()
-    # Crear un walker para recorrer el árbol de parseo.
-    walker = ParseTreeWalker()
-    # Recorrer el árbol con el listener para construir la obra musical.
-    walker.walk(listener, parse_tree)
-
-    # Obtener la obra construida por el listener.
-    obra = listener.obra
-    # Generar la notación ABC a partir de la obra.
-    abc = generar_abc(obra)
-    # Imprimir la notación ABC resultante.
-    print(abc)

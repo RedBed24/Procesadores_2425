@@ -8,6 +8,8 @@ class AntlrBuilder(BuildHookInterface):
         flags = [
             "antlr4",
             "-Dlanguage=Python3",
+            "-visitor",
+            "-no-listener",
             "-lib",
             "src/python/analysis/",
             "-Xexact-output-dir",
