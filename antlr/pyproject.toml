@@ -35,8 +35,11 @@ dependencies = [
   "hatchling==1.26.3",
 ]
 
+[tool.hatch.build]
+dev-mode-dirs = ["src/main/python"]
+
 [tool.hatch.build.targets.wheel]
-packages = ["."]
+packages = ["src/main/python/partitune"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -49,4 +52,4 @@ dependencies = [
 ]
 
 [project.scripts]
-partitune = "src.python.main:main"
+partitune = "partitune.__main__:main"

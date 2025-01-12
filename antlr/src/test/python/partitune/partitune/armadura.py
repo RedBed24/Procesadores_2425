@@ -1,5 +1,5 @@
-from src.python.partitune.armadura import ModificadorArmadura as MA, validate_armadura as va
-from src.python.partitune.nota_base import NotaBase as NB
+from partitune.partitune.armadura import ModificadorArmadura as MA, validate_armadura as va
+from partitune.partitune.nota_base import NotaBase as NB
 
 B = MA.BEMOL; S = MA.SOSTENIDO
 DO = NB.DO; RE = NB.RE; MI = NB.MI; FA = NB.FA; SOL = NB.SOL; LA = NB.LA; SI = NB.SI

@@ -1,5 +1,5 @@
-from src.python.generacion import _generar_lineas_divisorias as _gld
-from src.python.partitune.compas import Compas
+from partitune.generacion import _generar_lineas_divisorias as _gld
+from partitune.partitune.compas import Compas
 
 
 dos = Compas.DOSPORCUATRO
