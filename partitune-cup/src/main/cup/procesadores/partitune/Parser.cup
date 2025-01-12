@@ -1,6 +1,11 @@
 import procesadores.partitune.Scanner;
 import java_cup.runtime.*;
 import java.io.*;
+import procesadores.partitune.partitune.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 parser code {:
 	public static void main(String args[]) throws Exception {
@@ -19,36 +24,188 @@ parser code {:
 :}
 
 
+/* ---------- Declaracion de simbolos de la gramatica ---------- */
+/* Solo simbolos */
+terminal PUNTILLO, SILENCIO, LLAVE_IZQ, LLAVE_DER, PARENTESIS_IZQ, PARENTESIS_DER, IGUAL, FINAL_REP, PRINCIPIO_REP;
 
-terminal OBRA, TITULO, LLAVE_IZQ, LLAVE_DER, CLAVE, IGUAL, NOTA_BASE, COMPAS, COMPAS_DURACION, ARMADURA, FRAGMENTO, ID, PRINCIPIO_REP, FINAL_REP, LIGADURA, DURACION, PARENTESIS_IZQ, SILENCIO, PARENTESIS_DER, BEMOL, SOSTENIDO, OCTAVA, PUNTILLO, BECUADRO;
+terminal String TITULO, NOTA_BASE, ID, DURACION;
+terminal String OBRA, CLAVE, COMPAS, ARMADURA, FRAGMENTO, LIGADURA;
+terminal Compas COMPAS_DURACION;
+terminal Modificador SOSTENIDO, BECUADRO, BEMOL;
+terminal Octava OCTAVA;
 
-non terminal fragmento, obra, especificacion, clave, compas, armadura, notas_armadura, bloque_notas, elemento, repeticion, secuencia, ligadura, llamada, modificador, nota, lista_elementos, lista_secuencias, silencio_nota, posible_modificador, lista_fragmentos, lista_especificaciones, partitura, posible_puntillo, bemol_sostenido, posible_octava, posible_fin_rep;
+non terminal Obra partitura, obra;
+non terminal List<FragmentoSemantico> lista_fragmentos;
+non terminal List<Object> lista_especificaciones, bloque_notas, lista_elementos; 
+non terminal Object especificacion;
+non terminal Clave clave;
+non terminal Compas compas;
+non terminal Armadura armadura;
+non terminal List<NotaArmadura> notas_armadura;
+non terminal Octava posible_octava;
+non terminal ModificadorArmadura bemol_sostenido;
+non terminal FragmentoSemantico fragmento; 
+non terminal Object elemento;
+non terminal Boolean posible_fin_rep, posible_puntillo;
+non terminal Repeticion repeticion;
+non terminal List<Secuencia> lista_secuencias;
+non terminal Ligadura ligadura;
+non terminal FragmentoLlamado llamada;
+non terminal Secuencia secuencia;
+non terminal Modificador modificador, posible_modificador;
+non terminal Nota nota;
+non terminal List<Nota> silencio_nota;
+/*-----------------------------------------------------------------*/
 
-partitura::= lista_fragmentos obra;
-lista_fragmentos::= fragmento lista_fragmentos | ;
-obra::= OBRA TITULO LLAVE_IZQ lista_especificaciones bloque_notas LLAVE_DER | OBRA error;
-lista_especificaciones ::= especificacion lista_especificaciones | ;
+/* --------------------- gramatica --------------------- */
+partitura::= lista_fragmentos:lf obra:o 
+{: 
+	Map<String, FragmentoSemantico> dictFragmentos;
+	for(int i=0; i < lf.size(); i++) {
+		for(int j=i+1; j < lf.size(); j++) {
+			if (lf.get(i) == lf.get(j)) {
+				int linea = lf.get(j).getLinea();
+				int columna = lf.get(j).getColumna();
+				report_error("Linea " + linea + ", Columna " + columna + ": Fragmento duplicado" + lf.get(j).getNombre(), null);
+			}
+		}
+	}
+	
+	dictFragmentos = lf.stream().collect(Collectors.toMap(f -> f.getNombre().toUpperCase(), f -> f));
 
-especificacion::= clave | compas | armadura;
-clave::= CLAVE IGUAL NOTA_BASE;
-compas::= COMPAS IGUAL COMPAS_DURACION | COMPAS IGUAL error;
-armadura::= ARMADURA IGUAL notas_armadura;
-notas_armadura::= bemol_sostenido NOTA_BASE posible_octava notas_armadura | bemol_sostenido NOTA_BASE posible_octava;
-posible_octava::= OCTAVA | ;
-bemol_sostenido::= BEMOL | SOSTENIDO;
-fragmento::= FRAGMENTO ID LLAVE_IZQ lista_especificaciones bloque_notas LLAVE_DER;
+ 	for (FragmentoSemantico fragmento : dictFragmentos.values()) {
+            fragmento.setBloqueNotas(fragmento.getBloqueNotas().stream()
+                .map(elemento -> (elemento instanceof FragmentoLlamado)
+                    ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
+                    : elemento)
+                .collect(Collectors.toList()));
+        }
+	obra.setBloqueNotas(obra.getBloqueNotas().stream()
+            .map(elemento -> (elemento instanceof FragmentoLlamado)
+                ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
+                : elemento)
+            .collect(Collectors.toList()));
+	RESULT = obra;
+:};
 
-bloque_notas::= LLAVE_IZQ lista_elementos LLAVE_DER;
-lista_elementos::= elemento lista_elementos | elemento;
-elemento::= repeticion | secuencia posible_fin_rep | ligadura | llamada;
-posible_fin_rep::= FINAL_REP | ;
-repeticion::= PRINCIPIO_REP lista_secuencias FINAL_REP;
-lista_secuencias ::= secuencia lista_secuencias | secuencia;
-ligadura::= LIGADURA LLAVE_IZQ lista_secuencias LLAVE_DER;
-llamada::= ID;
-secuencia::= DURACION PARENTESIS_IZQ silencio_nota PARENTESIS_DER;
-silencio_nota::= silencio_nota SILENCIO | silencio_nota nota | SILENCIO | nota;
-modificador::= BEMOL | SOSTENIDO | BECUADRO;
-nota::= posible_modificador NOTA_BASE posible_octava posible_puntillo;
-posible_puntillo::= PUNTILLO | ;
-posible_modificador ::= modificador | ;
+lista_fragmentos::= fragmento:f lista_fragmentos:lista {:lista.add(f); RESULT = lista; :} 
+				| {: List<FragmentoSemantico> lista = new ArrayList<>(); RESULT = lista; :};
+
+obra::= OBRA TITULO:t LLAVE_IZQ lista_especificaciones:le bloque_notas:n LLAVE_DER {:
+	Clave cl;
+	Compas c;
+	Armadura a;
+	for (Object especificacion : le) {
+		if(especificacion instanceof Clave) cl = (Clave) especificacion;
+		else if(especificacion instanceof Compas) c = (Compas) especificacion;
+		else if(especificacion instanceof Armadura) a = (Armadura) especificacion;
+	}
+	RESULT = new Obra(t, cl, c, a, n);
+:}
+	| OBRA error {: report_error("Error en la declaracion de la obra", null); RESULT = null; :};
+
+lista_especificaciones ::= especificacion:e lista_especificaciones:l {: l.add(e); RESULT = l; :} 
+						| {: List<Object> lista = new ArrayList<>(); RESULT = lista; :};
+
+especificacion::= clave:cl {: RESULT = cl; :}
+				| compas:c {: RESULT = c; :}
+				| armadura:a {: RESULT = a; :};
+
+clave::= CLAVE IGUAL NOTA_BASE:n {: 
+	try {
+		RESULT = Clave.getClaveType(n);
+	}
+	catch (Exception e) {
+		System.out.println("Error al crear la clave, " + e.getMessage());
+	}
+:};
+
+compas::= COMPAS IGUAL COMPAS_DURACION:d {:RESULT = d; :} 
+		| COMPAS IGUAL error {: report_error("Error en la duracion del compas", null); RESULT=null;:};
+
+armadura::= ARMADURA IGUAL notas_armadura: lista 
+{:
+	boolean hay_bemoles = false;
+	boolean hay_sostenidos = false;
+	for (NotaArmadura n : lista) {
+		if(n.getModificador() == ModificadorArmadura.BEMOL) hay_bemoles = true;
+		else if(n.getModificador() == ModificadorArmadura.SOSTENIDO) hay_sostenidos = true;
+	}
+	if(hay_bemoles && hay_sostenidos) System.out.println("No se pueden mezclar sostenidos y bemoles en una armadura");
+	ModificadorArmadura mod = hay_bemoles ? ModificadorArmadura.BEMOL : ModificadorArmadura.SOSTENIDO;
+	try{
+		RESULT = new Armadura(mod, lista);
+	}
+	catch (Exception e) {
+		System.out.println("Error al crear la armadura, " + e.getMessage());
+	}
+:};
+
+notas_armadura::= bemol_sostenido:mod NOTA_BASE:n notas_armadura:lista {: lista.add(new NotaArmadura(mod, NotaBase.getNoteType(n))); RESULT = lista; :}
+				| bemol_sostenido:mod NOTA_BASE:n {: List<NotaArmadura> lista = new ArrayList<>(); lista.add(new NotaArmadura(mod, NotaBase.getNoteType(n))); RESULT = lista; :};
+
+posible_octava::= OCTAVA:o {: RESULT = o; :} 
+				| {: RESULT = Octava.NORMAL; :};
+
+bemol_sostenido::= BEMOL:b {:RESULT = ModificadorArmadura.getModificadorType(b); :} 
+				| SOSTENIDO:s {: RESULT = ModificadorArmadura.getModificadorType(s); :} ;
+
+fragmento::= FRAGMENTO ID:id LLAVE_IZQ lista_especificaciones:le bloque_notas:bn LLAVE_DER {: 
+	Clave cl;
+	Compas c;
+	Armadura a;
+	for (Object especificacion : le) {
+		if(especificacion instanceof Clave) cl = (Clave) especificacion;
+		else if(especificacion instanceof Compas) c = (Compas) especificacion;
+		else if(especificacion instanceof Armadura) a = (Armadura) especificacion;
+	}
+	RESULT = new FragmentoSemantico(id, bn, idleft, idright, cl, c, a); 
+:};
+
+bloque_notas::= LLAVE_IZQ lista_elementos:le LLAVE_DER {: RESULT = le; :};
+
+lista_elementos::= elemento:e lista_elementos:lista {: lista.add(e); RESULT = lista; :}
+				| elemento:e {: List<Object> lista = new ArrayList<>(); lista.add(e); RESULT = lista; :};
+
+elemento::= repeticion:r {: RESULT =r; :}
+			| secuencia:s posible_fin_rep:rep {:
+				if (rep){
+					List<Secuencia> lista = new ArrayList<>();
+					lista.add(s);
+					RESULT = new Repeticion(TipoRepeticion.CON_FINAL, lista);
+				} 
+				else RESULT = s;
+			:}
+			| ligadura:l {: RESULT = l;:}
+			| llamada: ll {: RESULT = ll; :};
+
+posible_fin_rep::= FINAL_REP {: RESULT=true; :} 
+				| {: RESULT = false; :} ;
+
+repeticion::= PRINCIPIO_REP lista_secuencias:ls FINAL_REP {: RESULT = new Repeticion(TipoRepeticion.CON_INICIO, ls); :};
+
+lista_secuencias ::= secuencia:s lista_secuencias:lista {: lista.add(s); RESULT = lista; :} 
+				 | secuencia:s {: List<Secuencia> lista = new ArrayList<>(); lista.add(s); RESULT = lista;:};
+
+ligadura::= LIGADURA LLAVE_IZQ lista_secuencias:ls LLAVE_DER {:RESULT = new Ligadura(ls);:};
+
+llamada::= ID:id {: RESULT = new FragmentoLlamado(id, idleft, idright); :};
+
+secuencia::= DURACION:d PARENTESIS_IZQ silencio_nota:lista_notas PARENTESIS_DER {: RESULT = new Secuencia(Duracion. getDurationType(d), lista_notas); :};
+
+silencio_nota::= silencio_nota:lista SILENCIO {: lista.add(null); RESULT = lista; :} 
+			| silencio_nota:lista nota:n {: lista.add(n); RESULT = lista; :} 
+			| SILENCIO {: List<Nota> lista = new ArrayList<>(); lista.add(null);RESULT = lista; :} 
+			| nota:n {: List<Nota> lista = new ArrayList<>(); lista.add(n); RESULT = lista; :};
+
+modificador::= BEMOL:b {: RESULT = b; :} 
+			| SOSTENIDO:s {: RESULT=s; :} 
+			| BECUADRO:bc {: RESULT = bc; :};
+
+nota::= posible_modificador:pm NOTA_BASE:n posible_octava:po  posible_puntillo:pp {: RESULT = new Nota(NotaBase.getNoteType(n), pm, po, pp); :};
+
+posible_puntillo::= PUNTILLO {: RESULT = true; :} 
+				| {: RESULT = false; :};
+
+posible_modificador ::= modificador:m {: RESULT = m; :}  
+					| {: RESULT = Modificador.BECUADRO; :};
