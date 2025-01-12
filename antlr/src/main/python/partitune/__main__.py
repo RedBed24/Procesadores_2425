@@ -10,6 +10,7 @@ from .generacion import generar_abc
 
 
 from .utils.logger import logger
+from .utils.logger_error_listener import LoggerErrorListener
 
 
 # Para visualización gráfica
@@ -57,9 +58,25 @@ def generate_abc(input_file):
     """Genera el archivo ABC a partir de un archivo de entrada."""
     input_stream = FileStream(input_file, encoding="utf-8")
     lexer = Scanner(input_stream)
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(LoggerErrorListener())
     tokens = CommonTokenStream(lexer)
     parser = Parser(tokens)
+    parser.removeErrorListeners()
+    parser.addErrorListener(LoggerErrorListener())
     visitor = Visitor()
+
+    tokens.fill()
+    for token in filter(lambda token: token.channel == Scanner.ERROR_CHANNEL, tokens.tokens):
+        match token.type:
+            case Scanner.TITULO_ERROR:
+                logger.error(f"Error en el título: {token.text}")
+            case Scanner.COMPAS_DURATION_ERROR:
+                logger.error(f"Error en la duración del compás: {token.text}")
+            case Scanner.BAD_COMMENT:
+                logger.error(f"Error en el comentario: {token.text}")
+            case Scanner.UNKNOWN:
+                logger.error(f"Error en el archivo de entrada: {token.text}")
 
     try: 
         parse_tree = parser.partitura()
