@@ -23,10 +23,12 @@ assert _gld(rellenar_silencios,  tres) == "A2 A1/2 z1/2 | A1 A1/4 A1/4 z3/2 | A2
 valor_mayor = 'A1 A3 A4 A6 A1'
 assert _gld(valor_mayor,  dos) == 'A1 A3 | A4 | A6 | A1 \n' # notas mayores apaño
 
-repeticion= '|: A1 A1 A1 A1/2 :| A2'
-assert _gld(repeticion,  dos) == '|: A1 A1 | A1 A1/2 z1/2 :| A2 | \n' # repeticion añade silencios
-assert not _gld(repeticion,  tres) == '|: A1 A1 | A1 A1/2 z1/2 :| A2 | \n' # repeticion añade silencios
+repeticion= 'A1 A1 |: A1 A1 A1 A1/2 :| A2'
+assert _gld(repeticion,  dos) == 'A1 A1 |: A1 A1 | A1 A1/2 z1/2 :| A2 | \n' # repeticion añade silencios
+assert _gld(repeticion,  tres) == 'A1 A1 z1 |: A1 A1 A1 | A1/2 z1 z1 z1/2 :| A2 \n' # repeticion añade silencios
 
+repeticion= 'A1 A1 |: A1 A1 :| A2'
+assert _gld(repeticion,  dos) == 'A1 A1 |: A1 A1 :| A2 | \n' 
 fragmento_3 = "A1/4 A1 A1/4 A1/2 A2\nK:C\nM:3/4\nA1/4 A1 A1/4 A1/2 A2"
 assert _gld(fragmento_3,  dos) == "A1/4 A1 A1/4 A1/2 | A2 | \nK:C\nM:3/4\nA1/4 A1 A1/4 A1/2 z1 | A2 \n"
 

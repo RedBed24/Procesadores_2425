@@ -264,10 +264,16 @@ def _generar_lineas_divisorias(abc_cuerpo:str, obra_compas:Compas)-> str:
         else:
             for elemento in linea.split(" "): # es un bloque?
                 if not _elemento_es_nota(elemento):
-                    if elemento == ':|':
-                        new_abc_cuerpo += f"{_generar_silencios(pulsos_restantes)} " 
-                        pulsos_restantes = pulsos
-                    new_abc_cuerpo += elemento + " "
+                    if elemento == '|:' or elemento == ':|':
+                        if pulsos_restantes != pulsos:
+                            new_abc_cuerpo += f"{_generar_silencios(pulsos_restantes)} " 
+                            pulsos_restantes = pulsos
+                            new_abc_cuerpo += elemento + " "
+                        else:
+                            if elemento == '|:':
+                                new_abc_cuerpo = new_abc_cuerpo.rstrip() + ":" + " "
+                            else:
+                                new_abc_cuerpo = new_abc_cuerpo[:-2] + ":|" + " "                            
                     continue
                 #si es nota, coger numeros del elemento, que es la duracion
                 valor_nota = _valor_duracion(elemento)
