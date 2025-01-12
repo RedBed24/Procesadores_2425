@@ -6,7 +6,7 @@ from graphviz import Digraph
 from .analysis.Parser import Parser  # Importa el Parser
 from .analysis.Scanner import Scanner  # Importa el Scanner
 from .antlr_to_abc import antlr_to_abc  # Importa la función de transcripción a ABC
-from .listener import Listener  # Importa el Listener
+from .visitor import Visitor
 from .generacion import generar_abc
 
 from .utils.logger import logger
@@ -59,26 +59,29 @@ def generate_abc(input_file):
     lexer = Scanner(input_stream)
     tokens = CommonTokenStream(lexer)
     parser = Parser(tokens)
-    parse_tree = parser.partitura()
-    logger.debug(parse_tree.toStringTree(recog=parser))
+    visitor = Visitor()
 
-    walker = ParseTreeWalker()
-    listener = Listener()
+    try: 
+        parse_tree = parser.partitura()
+        logger.debug(parse_tree.toStringTree(recog=parser))
 
-    walker.walk(listener, parse_tree)
+        obra = visitor.visit(parse_tree)
 
-    abc_output = generar_abc(listener.obra)
+        if visitor.warnings:
+            logger.warning("Advertencias:")
+            logger.warning("\n".join(visitor.warnings))
 
-    if not abc_output.strip():
-        logger.warning(
-            "Advertencia: No se generó contenido en el archivo ABC. Verifica el archivo de entrada o la gramática."
-        )
+        abc_output = generar_abc(obra)
 
-    output_file = input_file.replace(".txt", ".abc")
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(abc_output)
+        output_file = input_file.replace(".txt", ".abc")
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(abc_output)
 
-    logger.info(f"Archivo ABC generado: {output_file}")
+        logger.info(f"Archivo ABC generado: {output_file}")
+
+    except Exception as e:
+        logger.error("Error en el archivo de entrada:")
+        logger.error(e)
 
 
 def main():

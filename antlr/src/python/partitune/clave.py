@@ -16,4 +16,4 @@ def get_clave_from_partitune(clave: str) -> Clave:
         case "DO":
             return Clave.DO
         case _:
-            raise ValueError(f"Clave no válida: {clave}")
+            raise ValueError(f"Clave no válida: {clave}, debe ser SOL, FA o DO")
