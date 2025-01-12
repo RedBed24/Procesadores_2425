@@ -44,12 +44,5 @@ packages = ["src/main/python/partitune"]
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.hatch.build.targets.wheel.hooks.custom]
-path = "build_hooks.py"
-dependencies = [
-  "antlr4-tools==0.2.1",
-  "hatchling==1.27",
-]
-
 [project.scripts]
 partitune = "partitune.__main__:main"
