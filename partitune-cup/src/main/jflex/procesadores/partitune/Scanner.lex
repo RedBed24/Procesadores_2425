@@ -4,6 +4,7 @@ package procesadores.partitune;
 import java_cup.runtime.Symbol;
 import procesadores.partitune.sym;
 import procesadores.partitune.utils.*;
+import procesadores.partitune.partitune.*;
 
 import java.lang.Character;
 

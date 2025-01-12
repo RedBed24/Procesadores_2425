@@ -1,9 +1,11 @@
 package procesadores.partitune.partitune;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class FragmentoSimple {
     public String nombre;
 

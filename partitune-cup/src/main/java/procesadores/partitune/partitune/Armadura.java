@@ -11,12 +11,12 @@ public class Armadura {
     public int cantidadModificadores;
     public ModificadorArmadura tipo_modificacion;
 
-    public Armadura(ModificadorArmadura tipo_modificacion, List<NotaBase> notas) {
+    public Armadura(ModificadorArmadura tipo_modificacion, List<NotaArmadura> notas) {
         this.tipo_modificacion = tipo_modificacion;
         this.cantidadModificadores = validate_armadura(tipo_modificacion, notas);
     }
 
-    public int validate_armadura(ModificadorArmadura tipo_modificacion, List<NotaBase> notas) {
+    public int validate_armadura(ModificadorArmadura tipo_modificacion, List<NotaArmadura> notas) {
         List<NotaBase> notas_posibles;
         int i = 0;
 
@@ -50,8 +50,8 @@ public class Armadura {
         int[] cuenta = new int[notas_posibles.size()];
 
 
-        for (NotaBase nota : notas) {
-            cuenta[notas_posibles.indexOf(nota)]++;
+        for (NotaArmadura nota : notas) {
+            cuenta[notas_posibles.indexOf(nota.getNota())]++;
         }
 
         for (i = 0; i < cuenta.length; i++) {
