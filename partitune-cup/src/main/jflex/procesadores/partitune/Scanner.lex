@@ -41,8 +41,13 @@ import java.lang.Character;
 <YYINITIAL> {
 [a-zA-Z][a-zA-Z|0-9]* {
         if (KeyWords.isKeyWord(yytext())){
-            int num_sym = KeyWords.getTokenType(yytext());
-            return symbol(num_sym, KeyWords.returnPartituneObject(num_sym, yytext()));
+            try{
+                int num_sym = KeyWords.getTokenType(yytext());
+                return symbol(num_sym, KeyWords.returnPartituneObject(num_sym, yytext()));
+            } catch (Exception e){
+                System.out.printf(Errors.LEXER_ERROR_MESSAGES[Errors.LEXER_UNKNOWN_ERROR], yyline, yycolumn);
+                System.out.println(e.getMessage());
+            }
         } else {
             return symbol(sym.ID, new String(yytext()));
         }

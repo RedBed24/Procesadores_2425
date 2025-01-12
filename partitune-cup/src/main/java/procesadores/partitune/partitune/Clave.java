@@ -5,16 +5,16 @@ public enum Clave {
     FA,
     DO;
     
-    public static Clave getClaveType(String word) {
-        switch (word.toUpperCase()) {
-            case "SOL":
+    public static Clave getClaveType(NotaBase notaBase) {
+        switch (notaBase) {
+            case NotaBase.SOL:
                 return Clave.SOL;
-            case "FA":
+            case NotaBase.FA:
                 return Clave.FA;
-            case "DO":
+            case NotaBase.DO:
                 return Clave.DO;
             default:
-                throw new IllegalArgumentException("Clave no valida solo puede ser SOL, FA o DO: " + word);
+                throw new IllegalArgumentException("Clave no valida solo puede ser SOL, FA o DO: " + notaBase);
         }
     }
 }

@@ -28,11 +28,13 @@ parser code {:
 /* Solo simbolos */
 terminal PUNTILLO, SILENCIO, LLAVE_IZQ, LLAVE_DER, PARENTESIS_IZQ, PARENTESIS_DER, IGUAL, FINAL_REP, PRINCIPIO_REP;
 
-terminal String TITULO, NOTA_BASE, ID, DURACION;
+terminal String TITULO, ID;
 terminal String OBRA, CLAVE, COMPAS, ARMADURA, FRAGMENTO, LIGADURA;
 terminal Compas COMPAS_DURACION;
 terminal Modificador SOSTENIDO, BECUADRO, BEMOL;
 terminal Octava OCTAVA;
+terminal NotaBase NOTA_BASE;
+terminal Duracion DURACION;
 
 non terminal Obra partitura, obra;
 non terminal List<FragmentoSemantico> lista_fragmentos;
@@ -60,6 +62,10 @@ non terminal List<Nota> silencio_nota;
 /* --------------------- gramatica --------------------- */
 partitura::= lista_fragmentos:lf obra:obra 
 {: 
+	if (obra == null) {
+		RESULT = null;
+	}
+	else {
 	Map<String, FragmentoSemantico> dictFragmentos;
 	for(int i=0; i < lf.size(); i++) {
 		for(int j=i+1; j < lf.size(); j++) {
@@ -86,6 +92,7 @@ partitura::= lista_fragmentos:lf obra:obra
                 : elemento)
             .collect(Collectors.toList()));
 	RESULT = obra;
+	}
 :};
 
 lista_fragmentos::= fragmento:f lista_fragmentos:lista {:lista.add(f); RESULT = lista; :} 
@@ -151,8 +158,8 @@ armadura::= ARMADURA IGUAL notas_armadura: lista
 	}
 :};
 
-notas_armadura::= bemol_sostenido:mod NOTA_BASE:n notas_armadura:lista {: lista.add(new NotaArmadura(mod, NotaBase.getNoteType(n))); RESULT = lista; :}
-				| bemol_sostenido:mod NOTA_BASE:n {: List<NotaArmadura> lista = new ArrayList<>(); lista.add(new NotaArmadura(mod, NotaBase.getNoteType(n))); RESULT = lista; :};
+notas_armadura::= bemol_sostenido:mod NOTA_BASE:n notas_armadura:lista {: lista.add(new NotaArmadura(mod, n)); RESULT = lista; :}
+				| bemol_sostenido:mod NOTA_BASE:n {: List<NotaArmadura> lista = new ArrayList<>(); lista.add(new NotaArmadura(mod, n)); RESULT = lista; :};
 
 posible_octava::= OCTAVA:o {: RESULT = o; :} 
 				| {: RESULT = Octava.NORMAL; :};
@@ -202,7 +209,7 @@ ligadura::= LIGADURA LLAVE_IZQ lista_secuencias:ls LLAVE_DER {:RESULT = new Liga
 
 llamada::= ID:id {: RESULT = new FragmentoLlamado(id, idleft, idright); :};
 
-secuencia::= DURACION:d PARENTESIS_IZQ silencio_nota:lista_notas PARENTESIS_DER {: RESULT = new Secuencia(Duracion. getDurationType(d), lista_notas); :};
+secuencia::= DURACION:d PARENTESIS_IZQ silencio_nota:lista_notas PARENTESIS_DER {: RESULT = new Secuencia(d, lista_notas); :};
 
 silencio_nota::= silencio_nota:lista SILENCIO {: lista.add(null); RESULT = lista; :} 
 			| silencio_nota:lista nota:n {: lista.add(n); RESULT = lista; :} 
@@ -213,7 +220,7 @@ modificador::= BEMOL:b {: RESULT = b; :}
 			| SOSTENIDO:s {: RESULT=s; :} 
 			| BECUADRO:bc {: RESULT = bc; :};
 
-nota::= posible_modificador:pm NOTA_BASE:n posible_octava:po  posible_puntillo:pp {: RESULT = new Nota(NotaBase.getNoteType(n), pm, po, pp); :};
+nota::= posible_modificador:pm NOTA_BASE:n posible_octava:po  posible_puntillo:pp {: RESULT = new Nota(n, pm, po, pp); :};
 
 posible_puntillo::= PUNTILLO {: RESULT = true; :} 
 				| {: RESULT = false; :};
