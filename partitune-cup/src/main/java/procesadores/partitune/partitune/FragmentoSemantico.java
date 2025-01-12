@@ -1,17 +1,18 @@
 package procesadores.partitune.partitune;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class FragmentoSemantico extends FragmentoSimple{
     
-    @NonNull public List<Object> secuencias;
+    public List<Object> secuencias;
     public int linea;
     public int columna;
     
@@ -19,14 +20,11 @@ public class FragmentoSemantico extends FragmentoSimple{
     public Compas compas;
     public Armadura armadura;
 
-    public FragmentoSemantico(String nombre, List<Object> secuencias, int linea, int columna, Clave clave, Compas compas, Armadura armadura) {
-        super(nombre);
+    public FragmentoSemantico(List<Object> secuencias, int linea, int columna) {
+        this();
         this.secuencias = secuencias;
         this.linea = linea;
         this.columna = columna;
-        this.clave = clave;
-        this.compas = compas;
-        this.armadura = armadura;
     }
 }
 

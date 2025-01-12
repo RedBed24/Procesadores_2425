@@ -15,7 +15,7 @@ parser code {:
 			new parser(new Scanner(reader)).parse();
 		}
 		catch ( Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			System.out.println("\nError durante el analisis");
 			System.exit(1);
 		}
@@ -58,7 +58,7 @@ non terminal List<Nota> silencio_nota;
 /*-----------------------------------------------------------------*/
 
 /* --------------------- gramatica --------------------- */
-partitura::= lista_fragmentos:lf obra:o 
+partitura::= lista_fragmentos:lf obra:obra 
 {: 
 	Map<String, FragmentoSemantico> dictFragmentos;
 	for(int i=0; i < lf.size(); i++) {
@@ -66,7 +66,7 @@ partitura::= lista_fragmentos:lf obra:o
 			if (lf.get(i) == lf.get(j)) {
 				int linea = lf.get(j).getLinea();
 				int columna = lf.get(j).getColumna();
-				report_error("Linea " + linea + ", Columna " + columna + ": Fragmento duplicado" + lf.get(j).getNombre(), null);
+				System.out.println("Error en la linea " + linea + " columna " + columna + ": Fragmento duplicado");
 			}
 		}
 	}
@@ -74,13 +74,13 @@ partitura::= lista_fragmentos:lf obra:o
 	dictFragmentos = lf.stream().collect(Collectors.toMap(f -> f.getNombre().toUpperCase(), f -> f));
 
  	for (FragmentoSemantico fragmento : dictFragmentos.values()) {
-            fragmento.setBloqueNotas(fragmento.getBloqueNotas().stream()
+            fragmento.setSecuencias(fragmento.getSecuencias().stream()
                 .map(elemento -> (elemento instanceof FragmentoLlamado)
                     ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
                     : elemento)
                 .collect(Collectors.toList()));
         }
-	obra.setBloqueNotas(obra.getBloqueNotas().stream()
+	obra.setBloque_notas(obra.getBloque_notas().stream()
             .map(elemento -> (elemento instanceof FragmentoLlamado)
                 ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
                 : elemento)
@@ -92,17 +92,27 @@ lista_fragmentos::= fragmento:f lista_fragmentos:lista {:lista.add(f); RESULT = 
 				| {: List<FragmentoSemantico> lista = new ArrayList<>(); RESULT = lista; :};
 
 obra::= OBRA TITULO:t LLAVE_IZQ lista_especificaciones:le bloque_notas:n LLAVE_DER {:
+	Obra o = new Obra(t, n);
 	Clave cl;
 	Compas c;
 	Armadura a;
 	for (Object especificacion : le) {
-		if(especificacion instanceof Clave) cl = (Clave) especificacion;
-		else if(especificacion instanceof Compas) c = (Compas) especificacion;
-		else if(especificacion instanceof Armadura) a = (Armadura) especificacion;
+		if(especificacion instanceof Clave){
+			cl = (Clave) especificacion;
+			o.setClave(cl);
+		}
+		else if(especificacion instanceof Compas){
+			c = (Compas) especificacion;
+			o.setCompas(c);
+		}
+		else if(especificacion instanceof Armadura){
+			a = (Armadura) especificacion;
+			o.setArmadura(a);
+		}
 	}
-	RESULT = new Obra(t, cl, c, a, n);
+	RESULT = o;
 :}
-	| OBRA error {: report_error("Error en la declaracion de la obra", null); RESULT = null; :};
+	| OBRA error {: System.out.println("Error en la declaracion de la obra"); RESULT = null; :};
 
 lista_especificaciones ::= especificacion:e lista_especificaciones:l {: l.add(e); RESULT = l; :} 
 						| {: List<Object> lista = new ArrayList<>(); RESULT = lista; :};
@@ -121,7 +131,7 @@ clave::= CLAVE IGUAL NOTA_BASE:n {:
 :};
 
 compas::= COMPAS IGUAL COMPAS_DURACION:d {:RESULT = d; :} 
-		| COMPAS IGUAL error {: report_error("Error en la duracion del compas", null); RESULT=null;:};
+		| COMPAS IGUAL error {: System.out.println("Error en la duracion del compas"); RESULT=null;:};
 
 armadura::= ARMADURA IGUAL notas_armadura: lista 
 {:
@@ -151,6 +161,7 @@ bemol_sostenido::= BEMOL:b {:RESULT = ModificadorArmadura.getModificadorType(b);
 				| SOSTENIDO:s {: RESULT = ModificadorArmadura.getModificadorType(s); :} ;
 
 fragmento::= FRAGMENTO ID:id LLAVE_IZQ lista_especificaciones:le bloque_notas:bn LLAVE_DER {: 
+	FragmentoSemantico f = new FragmentoSemantico(bn, idleft, idright);
 	Clave cl;
 	Compas c;
 	Armadura a;
@@ -159,7 +170,7 @@ fragmento::= FRAGMENTO ID:id LLAVE_IZQ lista_especificaciones:le bloque_notas:bn
 		else if(especificacion instanceof Compas) c = (Compas) especificacion;
 		else if(especificacion instanceof Armadura) a = (Armadura) especificacion;
 	}
-	RESULT = new FragmentoSemantico(id, bn, idleft, idright, cl, c, a); 
+	RESULT = f; 
 :};
 
 bloque_notas::= LLAVE_IZQ lista_elementos:le LLAVE_DER {: RESULT = le; :};
