@@ -1,5 +1,6 @@
 package procesadores.partitune.utils;
 import procesadores.partitune.sym;
+import procesadores.partitune.partitune.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,5 +64,15 @@ public class KeyWords {
                 throw new IllegalArgumentException(word);
         }
     }
-
+    public static Object returnPartituneObject(int tokenType, String word) {
+        switch (tokenType) {
+            case sym.NOTA_BASE:
+                return NotaBase.getNoteType(word);
+            case sym.DURACION:
+                return Duracion.getDurationType(word);
+            case sym.BEMOL:
+                return Modificador.getModificadorType(sym.BEMOL);
+            default:
+            return new String(word);
+        }
 }

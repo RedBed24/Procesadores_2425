@@ -3,7 +3,6 @@ package procesadores.partitune;
 
 import java_cup.runtime.Symbol;
 import procesadores.partitune.sym;
-import procesadores.partitune.partitune.*;
 import procesadores.partitune.utils.*;
 
 import java.lang.Character;
@@ -41,45 +40,46 @@ import java.lang.Character;
 <YYINITIAL> {
 [a-zA-Z][a-zA-Z|0-9]* {
         if (KeyWords.isKeyWord(yytext())){
-            return symbol(KeyWords.getTokenType(yytext()), yytext());
+            int num_sym = KeyWords.getTokenType(yytext());
+            return symbol(num_sym, KeyWords.returnPartituneObject(num_sym, yytext()));
         } else {
-            return symbol(sym.ID, yytext());
+            return symbol(sym.ID, new String(yytext()));
         }
 }
 2\/4 | 3\/4 | 4\/4 | 6\/8 {
-    return symbol(sym.COMPAS_DURACION, yytext());
+    return symbol(sym.COMPAS_DURACION, Compas.getCompasType(yytext()));
 }
 [0-9]*\/[0-9]* {System.out.printf(Errors.LEXER_ERROR_MESSAGES[Errors.LEXER_COMPAS_DURATION_ERROR], yyline, yycolumn);}
-# { return symbol(sym.SOSTENIDO, yytext()); }
-' | _ { return symbol(sym.OCTAVA, yytext());}
+# { return symbol(sym.SOSTENIDO, Modificador.getModificadorType(sym.SOSTENIDO)); }
+' | _ { return symbol(sym.OCTAVA, Octava.getOctaveType(yytext()));}
 \. { 
-    return symbol(sym.PUNTILLO, yytext());
+    return symbol(sym.PUNTILLO);
 }
 \|: {
-     return symbol(sym.PRINCIPIO_REP, yytext());}
+     return symbol(sym.PRINCIPIO_REP);}
 :\| { 
-    return symbol(sym.FINAL_REP, yytext());}
+    return symbol(sym.FINAL_REP);}
 - { 
-    return symbol(sym.SILENCIO, yytext());}
+    return symbol(sym.SILENCIO);}
 \% {  
-    return symbol(sym.BECUADRO, yytext());}
+    return symbol(sym.BECUADRO, Modificador.getModificadorType(sym.BECUADRO) );}
 \{ { 
-    return symbol(sym.LLAVE_IZQ, yytext());
+    return symbol(sym.LLAVE_IZQ);
 }
 \} {
-    return symbol(sym.LLAVE_DER, yytext());
+    return symbol(sym.LLAVE_DER);
 }
 \( { 
-    return symbol(sym.PARENTESIS_IZQ, yytext());
+    return symbol(sym.PARENTESIS_IZQ);
 }
 \) { 
-    return symbol(sym.PARENTESIS_DER, yytext());
+    return symbol(sym.PARENTESIS_DER);
 }
 = { 
-    return symbol(sym.IGUAL, yytext());
+    return symbol(sym.IGUAL);
 }
 \"[^\"]*\" {  
-    return symbol(sym.TITULO, yytext());
+    return symbol(sym.TITULO, new String(yytext()));
 }
 \"[.|\n|\t]* { System.out.printf(Errors.LEXER_ERROR_MESSAGES[Errors.LEXER_UNFINISHED_TITLE], yyline, yycolumn); } // error título
 \/\* { yybegin(COMMENT); }
