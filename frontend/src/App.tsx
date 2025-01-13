@@ -7,8 +7,8 @@ import { Examples } from "./pages/examples";
 
 const links = [
   { link: '/', label: 'Editor' },
-  { link: '/examples', label: 'Ejemplos' },
-  { link: '/help', label: 'Ayuda' },
+  // { link: '/examples', label: 'Ejemplos' },
+  { link: '/help', label: 'Autores' },
 ];
 
 

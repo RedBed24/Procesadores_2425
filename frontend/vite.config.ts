@@ -7,7 +7,6 @@ export default defineConfig({
   server: {
     proxy: {
      '/generate_abc': 'http://localhost:8000',
-     '/get_midi': 'http://localhost:8000',
     }
   }
 })

@@ -10,11 +10,8 @@ Esta página se abre por defecto. Tiene un cuadro de texto para que el usuario p
 
 Debajo del editor, se muestra a la izquierda la partitura en formato 'ABC' y a la derecha el reproductor de audio y la partitura. Todo esto se puede descargar.
 
-### Ejemplos
 
-TODO: Añadir ejemplos ya generados
-
-### Ayuda
+### Autores
 
 Muestra los autores.
 TODO: Añadir ayuda

@@ -40,6 +40,7 @@ export const EditorPartitune: React.FC = () => {
 
     } catch (err: any) {
       setError(err.message || 'Error al generar el archivo');
+      setIsSubmitted(false);
     }
   };
 
@@ -83,18 +84,21 @@ export const EditorPartitune: React.FC = () => {
             value={musicText}
             onChange={(event) => setMusicText(event.currentTarget.value)}
           /> */}
-          <Editor
-      height="300px" 
-      defaultLanguage="plaintext"
-      value={musicText}
-      onChange={(newValue) => setMusicText(newValue || "")}
-      options={{
-        minimap: { enabled: false },
-        lineNumbers: "on",
-        scrollBeyondLastLine: false, 
-        wordWrap: "on", 
-      }}
-    />
+          <Text size='sm' mb={0}>Escribe aquí la música</Text>
+    <div style={{ marginTop:'0px' }}>
+      <Editor
+        height="300px" 
+        defaultLanguage="plaintext"
+        value={musicText}
+        onChange={(newValue) => setMusicText(newValue || "")}
+        options={{
+          minimap: { enabled: false },
+          lineNumbers: "on",
+          scrollBeyondLastLine: false, 
+          wordWrap: "on", 
+        }}
+      />
+    </div>
           <Group>
             <Button mt='xl' size='md' onClick={handleSubmit} rightSection={<SendHorizontal />}>
               Convertir
