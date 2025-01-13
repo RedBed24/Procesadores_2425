@@ -18,7 +18,7 @@ def iamalive():
 def generate_abc(file: UploadFile = File(...)):
     try:
         #guardar en un archivo temporal para pasarlo por partitune como archivo
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".abc", dir=directory) as tf:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", dir=directory) as tf:
             shutil.copyfileobj(file.file, tf)
             temp_file_path = tf.name
             file_name = os.path.basename(temp_file_path)
