@@ -43,7 +43,9 @@ class ComentarioError(LexerError):
     pass
 
 class CaracterNoReconocidoError(LexerError):
-    pass
+    def __init__(self, line: int, column: int, caracter: str):
+        super().__init__(line, column)
+        self.caracter = caracter
 
 class ParserError(Exception):
     def __init__(self, line: int, column: int):
