@@ -183,75 +183,62 @@ public class AbcGenerator {
     }
 
     private static String generarLineasDivisorias(String abcCuerpo, Compas compas) {
-    int pulsosTotales = obtenerPulsosPorCompas(compas);
-    int pulsosRestantes = pulsosTotales;
-    StringBuilder resultado = new StringBuilder();
+        int pulsosTotales = obtenerPulsosPorCompas(compas);
+        int pulsosRestantes = pulsosTotales;
+        StringBuilder resultado = new StringBuilder();
 
-    for (String linea : abcCuerpo.split("\\n")) {
-        System.out.println(linea);
-        // Si la línea define un nuevo compás o clave, añadirla directamente
-        if (linea.startsWith("M:") || linea.startsWith("K:")) {
-            resultado.append(linea).append("\n");
-            continue;
-        }
-
-        // Procesar cada elemento de la línea
-        for (String elemento : linea.split(" ")) {
-            System.out.println(elemento);
-            if (elemento.isEmpty()) {
-                continue; // Ignorar elementos vacíos
+        for (String linea : abcCuerpo.split("\\n")) {
+            // Si la línea define un nuevo compás o clave, añadirla directamente
+            if (linea.startsWith("M:") || linea.startsWith("K:")) {
+                resultado.append(linea).append("\n");
+                continue;
             }
-            else {
-                // Verificar si el elemento es una nota o un silencio
-            if (esNotaOUnSilencio(elemento)) {
-                double duracionElemento = obtenerDuracion(elemento);
-                System.out.println(duracionElemento);
-                // Mientras el elemento exceda los pulsos restantes
-                while (duracionElemento > pulsosRestantes) {
-                    resultado.append(dividirNota(elemento, pulsosRestantes)).append(" | ");
-                    duracionElemento -= pulsosRestantes;
-                    pulsosRestantes = pulsosTotales;
+
+            // Procesar cada elemento de la línea
+            for (String elemento : linea.split(" ")) {
+                if (elemento.isEmpty()) {
+                    continue; // Ignorar elementos vacíos
                 }
 
-                // Agregar el elemento actual ajustado al compás
-                if (duracionElemento > 0) {
-                    resultado.append(dividirNota(elemento, duracionElemento)).append(" ");
-                    pulsosRestantes -= duracionElemento;
+                if (esNotaOUnSilencio(elemento)) {
+                    double duracionElemento = obtenerDuracion(elemento);
 
-                    // Si los pulsos restantes llegan a 0, añadir una línea divisoria
-                    if (pulsosRestantes == 0) {
-                        resultado.append("| ");
-                        pulsosRestantes = pulsosTotales;
+                    // Si la nota excede el compás y el compás está vacío
+                    if (duracionElemento > pulsosTotales && pulsosRestantes == pulsosTotales) {
+                        // Añadir la nota al compás aunque exceda
+                        resultado.append(elemento).append(" ");
+                        pulsosRestantes = 0; // Marcar el compás como lleno
+                    } else {
+                        // Mientras la nota no quepa en el espacio restante
+                        while (duracionElemento > pulsosRestantes) {
+                            // Rellenar con silencio y cerrar el compás
+                            resultado.append("z").append(pulsosRestantes).append(" | ");
+                            duracionElemento -= pulsosRestantes;
+                            pulsosRestantes = pulsosTotales;
+                        }
+
+                        // Si aún queda duración, añadir la nota y ajustar los pulsos restantes
+                        if (duracionElemento > 0) {
+                            resultado.append(elemento).append(" ");
+                            pulsosRestantes -= duracionElemento;
+
+                            // Si el compás se completa exactamente
+                            if (pulsosRestantes == 0) {
+                                resultado.append("| ");
+                                pulsosRestantes = pulsosTotales;
+                            }
+                        }
                     }
+                } else {
+                    // Si no es nota ni silencio, agregarlo directamente
+                    resultado.append(elemento).append(" ");
                 }
-            } else {
-                // Si no es nota ni silencio, agregarlo directamente
-                resultado.append(elemento).append(" ");
             }
-            } 
+
+            resultado.append("\n");
         }
 
-        resultado.append("\n");
-    }
-
-    return resultado.toString();
-    }
-
-    private static String dividirNota(String elemento, double duracion) {
-        // Convertir la duración a formato fraccionario si es necesario
-        if (duracion % 1 == 0) {
-            // Si es un número entero, se representa como un entero
-            return elemento.replaceAll("[0-9]+(/[0-9]+)?", String.valueOf((int) duracion));
-        } else {
-            // Si es fracción, calcular numerador y denominador
-            int numerador = (int) Math.round(duracion * 16); // Escalar a múltiplos de 16
-            int denominador = 16;
-            while (numerador % 2 == 0 && denominador > 1) {
-                numerador /= 2;
-                denominador /= 2; // Simplificar fracción
-            }
-            return elemento.replaceAll("[0-9]+(/[0-9]+)?", numerador + "/" + denominador);
-        }
+        return resultado.toString();
     }
 
     private static boolean esNotaOUnSilencio(String elemento) {
