@@ -182,63 +182,67 @@ public class AbcGenerator {
         return duracionMap.getOrDefault(duracion, "");
     }
 
-    private static String generarLineasDivisorias(String abcCuerpo, Compas compas) {
+        private static String generarLineasDivisorias(String abcCuerpo, Compas compas) {
         int pulsosTotales = obtenerPulsosPorCompas(compas);
         int pulsosRestantes = pulsosTotales;
         StringBuilder resultado = new StringBuilder();
 
         for (String linea : abcCuerpo.split("\\n")) {
-            // Si la línea define un nuevo compás o clave, añadirla directamente
             if (linea.startsWith("M:") || linea.startsWith("K:")) {
                 resultado.append(linea).append("\n");
                 continue;
             }
 
-            // Procesar cada elemento de la línea
             for (String elemento : linea.split(" ")) {
                 if (elemento.isEmpty()) {
-                    continue; // Ignorar elementos vacíos
+                    continue;
                 }
 
                 if (esNotaOUnSilencio(elemento)) {
                     double duracionElemento = obtenerDuracion(elemento);
 
-                    // Si la nota excede el compás y el compás está vacío
-                    if (duracionElemento > pulsosTotales && pulsosRestantes == pulsosTotales) {
-                        // Añadir la nota al compás aunque exceda
-                        resultado.append(elemento).append(" ");
-                        pulsosRestantes = 0; // Marcar el compás como lleno
-                    } else {
-                        // Mientras la nota no quepa en el espacio restante
-                        while (duracionElemento > pulsosRestantes) {
-                            // Rellenar con silencio y cerrar el compás
+                    if (duracionElemento > pulsosRestantes) {
+                        if (pulsosRestantes > 0) {
                             resultado.append("z").append(pulsosRestantes).append(" | ");
-                            duracionElemento -= pulsosRestantes;
-                            pulsosRestantes = pulsosTotales;
                         }
+                        resultado.append(dividirNota(elemento, duracionElemento)).append(" ");
+                        pulsosRestantes = pulsosTotales - (int) duracionElemento;
+                    } else {
+                        resultado.append(dividirNota(elemento, duracionElemento)).append(" ");
+                        pulsosRestantes -= duracionElemento;
 
-                        // Si aún queda duración, añadir la nota y ajustar los pulsos restantes
-                        if (duracionElemento > 0) {
-                            resultado.append(elemento).append(" ");
-                            pulsosRestantes -= duracionElemento;
-
-                            // Si el compás se completa exactamente
-                            if (pulsosRestantes == 0) {
-                                resultado.append("| ");
-                                pulsosRestantes = pulsosTotales;
-                            }
+                        if (pulsosRestantes == 0) {
+                            resultado.append("| ");
+                            pulsosRestantes = pulsosTotales;
                         }
                     }
                 } else {
-                    // Si no es nota ni silencio, agregarlo directamente
                     resultado.append(elemento).append(" ");
                 }
+            }
+
+            if (pulsosRestantes > 0) {
+                resultado.append("z").append(pulsosRestantes).append(" | ");
             }
 
             resultado.append("\n");
         }
 
         return resultado.toString();
+    }
+
+    private static String dividirNota(String elemento, double duracion) {
+        if (duracion % 1 == 0) {
+            return elemento.replaceAll("[0-9]+(/[0-9]+)?", String.valueOf((int) duracion));
+        } else {
+            int numerador = (int) Math.round(duracion * 16);
+            int denominador = 16;
+            while (numerador % 2 == 0 && denominador > 1) {
+                numerador /= 2;
+                denominador /= 2;
+            }
+            return elemento.replaceAll("[0-9]+(/[0-9]+)?", numerador + "/" + denominador);
+        }
     }
 
     private static boolean esNotaOUnSilencio(String elemento) {
