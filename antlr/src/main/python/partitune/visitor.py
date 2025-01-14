@@ -34,13 +34,13 @@ class Visitor(ParserVisitor):
     def _obtener_especificacion(
         self, ctx: Parser.ObraContext | Parser.FragmentoContext
     ) -> tuple[Optional[Clave], Optional[Compas], Optional[Armadura]]:
-        especificacion: list[Clave | Compas | Armadura] = filter(
+        especificacion: list[Clave | Compas | Armadura] = list(filter(
             lambda x: x is not None,
             map(
                 lambda especificacion: self.visitEspecificacion(especificacion),
                 ctx.especificacion(),
             ),
-        )
+        ))
 
         claves: list[Clave] = list(
             filter(lambda x: isinstance(x, Clave), especificacion)
