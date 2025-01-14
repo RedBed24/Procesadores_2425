@@ -1,6 +1,5 @@
 from fractions import Fraction
 from antlr4 import FileStream, CommonTokenStream, ParseTreeWalker
-from pyparsing import line
 from .analysis.Scanner import Scanner
 from .analysis.Parser import Parser
 from .visitor import Visitor
@@ -254,7 +253,6 @@ def _generar_lineas_divisorias(abc_cuerpo:str, obra_compas:Compas)-> str:
     pulsos = int(obra_compas.value.split("/")[0])
     pulsos_restantes:float = pulsos
     new_abc_cuerpo =''
-    print (abc_cuerpo)
 
     for linea in abc_cuerpo.split("\n"):
         linea = linea.strip()
