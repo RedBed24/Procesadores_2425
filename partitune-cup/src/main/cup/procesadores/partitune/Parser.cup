@@ -142,6 +142,7 @@ lista_especificaciones ::= lista_especificaciones:l especificacion:e  {:
 			case Clave cl:
 				if (l[0] != null) report_warning(Errors.warningGetError(Errors.WARNING_DUPLICATE_KEY, eleft, eright));
 				l[0] = cl;
+				
 				break;
 			case Compas c:
 				if (l[1] != null) report_warning(Errors.warningGetError(Errors.WARNING_DUPLICATE_COMPAS, eleft, eright));
@@ -169,15 +170,15 @@ clave::= CLAVE IGUAL:i NOTA_BASE:n {:
 		RESULT = Clave.getClaveType(n);
 	}
 	catch (Exception e) {
-		report_error(Errors.semanticGetError(Errors.SEMANTIC_WRONG_KEY, ileft, iright),i);
+		report_error(Errors.semanticGetError(Errors.SEMANTIC_WRONG_KEY, nleft, nright),i);
 		RESULT = null;
 	}
 :};
 
-compas::= COMPAS IGUAL COMPAS_DURACION:d {:RESULT = d; :} 
+compas::= COMPAS IGUAL:i COMPAS_DURACION:d {:RESULT = d; :} 
 		| COMPAS:c IGUAL {: RESULT=null; :};
 
-armadura::= ARMADURA IGUAL notas_armadura: lista 
+armadura::= ARMADURA IGUAL:i notas_armadura:lista 
 {:
 	boolean hay_bemoles = false;
 	boolean hay_sostenidos = false;
@@ -191,7 +192,7 @@ armadura::= ARMADURA IGUAL notas_armadura: lista
 		RESULT = new Armadura(mod, lista);
 	}
 	catch (Exception e) {
-		report_error(Errors.semanticGetError(Errors.SEMANTIC_WRONG_KEY_NOTES, listaleft, listaright));
+		report_error(Errors.semanticGetError(Errors.SEMANTIC_WRONG_KEY_NOTES, ileft, iright));
 		RESULT = null;
 	}
 :};

@@ -51,7 +51,7 @@ public class Errors {
 
     private static String checkError(String[] messages, int codigo, int linea, int columna) {
         if (codigo >= 0 && codigo < messages.length) {
-            return messages[codigo] + " en la línea " + linea + ", columna " + columna;
+            return messages[codigo] + " en la línea " + (linea+1) + ", columna " + (columna+1);
         }
         return "Código de error desconocido";
     }
@@ -68,6 +68,10 @@ public class Errors {
     }
     public static String semanticGetError(int codigo) {
         return SEMANTIC_ERROR_MESSAGES[codigo];
+    }
+
+    public static String warningGetError(int codigo, int linea, int columna) {
+        return checkError(WARNIGS, codigo, linea, columna);
     }
 
 }
