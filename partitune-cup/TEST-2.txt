@@ -1,0 +1,10 @@
+obra "Twinkle Twinkle" {
+    compas = 4/4
+    clave = SOL
+    {
+        n (DO DO SOL SOL)
+        n (LA LA SOL -)
+        lig { n (FA FA MI MI) n (RE RE DO -) }
+        |: n (SOL SOL FA FA) :|
+    }
+}

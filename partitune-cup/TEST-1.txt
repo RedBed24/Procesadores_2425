@@ -1,0 +1,10 @@
+obra "Himno de la Alegría" {
+    compas = 4/4
+    clave = DO
+    {
+        n (MI MI FA SOL)
+        n (SOL FA MI RE)
+        lig { n (DO DO RE MI) sc (RE RE) }
+        |: n (MI MI FA SOL) :|
+    }
+}
