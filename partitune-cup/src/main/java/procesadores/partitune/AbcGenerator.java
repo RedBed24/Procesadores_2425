@@ -20,7 +20,7 @@ public class AbcGenerator {
                                        obra.getClave(), 
                                        obra.getCompas(), 
                                        obra.getArmadura());
-        abcBuilder.append(cuerpo);
+        abcBuilder.append(cuerpo.trim()); // Quitar espacios innecesarios al final
 
         return abcBuilder.toString();
     }
@@ -65,11 +65,11 @@ public class AbcGenerator {
 
         for (Object elemento : bloqueNotas) {
             if (elemento instanceof Secuencia) {
-                resultado.append(procesarSecuencia((Secuencia) elemento));
+                resultado.append(procesarSecuencia((Secuencia) elemento)).append(" ");
             } else if (elemento instanceof Repeticion) {
-                resultado.append(procesarRepeticion((Repeticion) elemento));
+                resultado.append(procesarRepeticion((Repeticion) elemento)).append(" ");
             } else if (elemento instanceof Ligadura) {
-                resultado.append(procesarLigadura((Ligadura) elemento));
+                resultado.append(procesarLigadura((Ligadura) elemento)).append(" ");
             } else if (elemento instanceof FragmentoSemantico fragmentoSemantico) {
                 if (fragmentoSemantico.getClave() != null || fragmentoSemantico.getCompas() != null) {
                     if (fragmentoSemantico.getClave() != null) {
