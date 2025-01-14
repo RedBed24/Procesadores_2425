@@ -20,7 +20,10 @@ public class AbcGenerator {
                                        obra.getClave(), 
                                        obra.getCompas(), 
                                        obra.getArmadura());
-        abcBuilder.append(cuerpo.trim()); // Quitar espacios innecesarios al final
+
+        cuerpo = cuerpo.trim(); // Quitar espacios innecesarios 
+        cuerpo = generarLineasDivisorias(cuerpo, obra.getCompas());
+        abcBuilder.append(cuerpo); 
 
         return abcBuilder.toString();
     }
@@ -177,5 +180,82 @@ public class AbcGenerator {
         );
 
         return duracionMap.getOrDefault(duracion, "");
+    }
+
+    private static String generarLineasDivisorias(String abcCuerpo, Compas compas) {
+    int pulsosTotales = obtenerPulsosPorCompas(compas);
+    int pulsosRestantes = pulsosTotales;
+    StringBuilder resultado = new StringBuilder();
+
+    for (String linea : abcCuerpo.split("\\n")) {
+        // Si la línea define un nuevo compás o clave, añadirla directamente
+        if (linea.startsWith("M:") || linea.startsWith("K:")) {
+            resultado.append(linea).append("\n");
+            continue;
+        }
+
+        // Procesar cada elemento de la línea
+        for (String elemento : linea.split(" ")) {
+            // Verificar si el elemento es una nota o un silencio
+            if (esNotaOUnSilencio(elemento)) {
+                double duracionElemento = obtenerDuracion(elemento);
+
+                // Mientras el elemento exceda los pulsos restantes
+                while (duracionElemento > pulsosRestantes) {
+                    resultado.append(dividirNota(elemento, pulsosRestantes)).append(" | ");
+                    duracionElemento -= pulsosRestantes;
+                    pulsosRestantes = pulsosTotales;
+                }
+
+                // Agregar el elemento actual ajustado al compás
+                if (duracionElemento > 0) {
+                    resultado.append(dividirNota(elemento, duracionElemento)).append(" ");
+                    pulsosRestantes -= duracionElemento;
+
+                    // Si los pulsos restantes llegan a 0, añadir una línea divisoria
+                    if (pulsosRestantes == 0) {
+                        resultado.append("| ");
+                        pulsosRestantes = pulsosTotales;
+                    }
+                }
+            } else {
+                // Si no es nota ni silencio, agregarlo directamente
+                resultado.append(elemento).append(" ");
+            }
+        }
+
+        resultado.append("\n");
+    }
+
+    return resultado.toString();
+    }
+
+    private static String dividirNota(String elemento, double duracion) {
+        // Reemplazar la duración actual del elemento por la nueva duración
+        return elemento.replaceAll("[0-9/]+", String.valueOf(duracion));
+    }
+
+    private static boolean esNotaOUnSilencio(String elemento) {
+        return elemento.matches("[A-Ga-gz].*");
+    }
+
+    private static double obtenerDuracion(String elemento) {
+        String[] partes = elemento.split("[^0-9/]+");
+        if (partes.length == 0) return 1.0; // Default: negra
+        if (partes[0].contains("/")) {
+            String[] fraccion = partes[0].split("/");
+            return Double.parseDouble(fraccion[0]) / Double.parseDouble(fraccion[1]);
+        }
+        return Double.parseDouble(partes[0]);
+    }
+
+    private static int obtenerPulsosPorCompas(Compas compas) {
+        switch (compas) {
+            case DOSPORCUATRO: return 2;
+            case TRESPORCUATRO: return 3;
+            case CUATROPORCUATRO: return 4;
+            case SEISPOROCHO: return 6; // Manejo como ternario compuesto
+            default: throw new IllegalArgumentException("Compas no válido: " + compas);
+        }
     }
 }
