@@ -23,20 +23,29 @@ def generateABC(file: UploadFile = File(...)):
             temp_file_path = tf.name
             file_name = os.path.basename(temp_file_path).removesuffix(".txt")
         
-        generate_abc(temp_file_path) #generar archivo abc, se guarda en el mismo sitio con .abc
+        generate_abc(temp_file_path) #generar archivo abc, se guarda en el mismo path pero con .abc
         path_abc = temp_file_path.removesuffix(".txt") + ".abc"
         #abrir file_abc
-        with open(f"{path_abc}", "r") as f:
+        with open(f"{path_abc}", "r") as f: # si no existe, lanzará excepción  = generacion no es correcta
             abc_content = f.read()
         
+        with open("partitune.log", "r") as f:
+            warnings = [line.split("WARNING - ")[1] for line in f if "WARNING - " in line]
+
         response_data = {
             "filename": file_name,
-            "content": abc_content
+            "content": abc_content,
+            "warnings": "\n".join(warnings)
         }
         os.remove(temp_file_path) #borrar archivos intermedios
         os.remove(path_abc)
         return jsonable_encoder(response_data)
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error generating abc file.")
+        with open("partitune.log", "r") as f:
+            error_messages =  [line.split("ERROR - ")[1] for line in f if "ERROR - " in line]
+            warnings = [line.split("WARNING - ")[1] for line in f if "WARNING - " in line]
+        if len(error_messages) == 0:
+            error_messages = ["An unexpected error occurred"]
+        raise HTTPException(status_code=500, detail="\n".join(error_messages + warnings))
 
