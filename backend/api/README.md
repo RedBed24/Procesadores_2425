@@ -23,8 +23,8 @@ curl -X POST "http://localhost:8000/generate_abc" -F "file=@path/to/your/file.pa
 
 Output, respuesta exitosa:
 - status: 200
-- content: JSON
-´´´json
+- content: JSON   
+```json
 {
   "filename": "generated_file.abc",
   "content": "contenido del archivo abc"
@@ -33,7 +33,7 @@ Output, respuesta exitosa:
 
 Output, respuesta fallida:
 - status: 500
-- content: JSON
+- content: JSON  
 ```json
 {
   "detail": "Error generating abc file."
