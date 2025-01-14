@@ -183,8 +183,8 @@ public class AbcGenerator {
     }
 
         private static String generarLineasDivisorias(String abcCuerpo, Compas compas) {
-        int pulsosTotales = obtenerPulsosPorCompas(compas);
-        int pulsosRestantes = pulsosTotales;
+        float pulsosTotales = obtenerPulsosPorCompas(compas);
+        float pulsosRestantes = pulsosTotales;
         StringBuilder resultado = new StringBuilder();
 
         for (String linea : abcCuerpo.split("\\n")) {
@@ -200,13 +200,17 @@ public class AbcGenerator {
 
                 if (esNotaOUnSilencio(elemento)) {
                     double duracionElemento = obtenerDuracion(elemento);
-
+                    
+                    if (duracionElemento > pulsosTotales){
+                        duracionElemento = pulsosTotales;
+                    }
+                    
                     if (duracionElemento > pulsosRestantes) {
                         if (pulsosRestantes > 0) {
-                            resultado.append("z").append(pulsosRestantes).append(" | ");
+                            resultado.append("z").append(valorSilencio(pulsosRestantes)).append(" | ");
                         }
                         resultado.append(dividirNota(elemento, duracionElemento)).append(" ");
-                        pulsosRestantes = pulsosTotales - (int) duracionElemento;
+                        pulsosRestantes = pulsosTotales - (float) duracionElemento;
                     } else {
                         resultado.append(dividirNota(elemento, duracionElemento)).append(" ");
                         pulsosRestantes -= duracionElemento;
@@ -219,10 +223,6 @@ public class AbcGenerator {
                 } else {
                     resultado.append(elemento).append(" ");
                 }
-            }
-
-            if (pulsosRestantes > 0) {
-                resultado.append("z").append(pulsosRestantes).append(" | ");
             }
 
             resultado.append("\n");
@@ -242,6 +242,20 @@ public class AbcGenerator {
                 denominador /= 2;
             }
             return elemento.replaceAll("[0-9]+(/[0-9]+)?", numerador + "/" + denominador);
+        }
+    }
+
+    private static String valorSilencio(double duracion) {
+        if (duracion % 1 == 0) {
+            return String.valueOf((int) duracion);
+        } else {
+            int numerador = (int) Math.round(duracion * 16);
+            int denominador = 16;
+            while (numerador % 2 == 0 && denominador > 1) {
+                numerador /= 2;
+                denominador /= 2;
+            }
+            return numerador + "/" + denominador;
         }
     }
 
