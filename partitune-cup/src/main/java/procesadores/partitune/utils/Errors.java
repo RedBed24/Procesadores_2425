@@ -2,12 +2,12 @@ package procesadores.partitune.utils;
 
 public class Errors {
     public static final String[] LEXER_ERROR_MESSAGES = {
-        "Error: Comentario sin cerrar en línea %d columna %d\n",
-        "Error: Caracter no reconocido en línea %d columna %d\n",
-        "Error: Identificador no permitido en línea %d columna %d\n",
-        "Error: Duracion de compas erronea en línea %d columna %d\n",
-        "Error: Titulo incorrecto, faltan las comillas de cierre en línea %d columna %d\n",
-        "Error: Error desconocido en línea %d columna %d\n",
+        "Error: Comentario sin cerrar en linea %d columna %d\n",
+        "Error: Caracter no reconocido en linea %d columna %d\n",
+        "Error: Identificador no permitido en linea %d columna %d\n",
+        "Error: Duracion de compas erronea en linea %d columna %d\n",
+        "Error: Titulo incorrecto, faltan las comillas de cierre en linea %d columna %d\n",
+        "Error: Error desconocido en linea %d columna %d\n",
     };
 
     public static final int LEXER_COMMENT_ERROR = 0;
