@@ -23,13 +23,14 @@ from .partitune.fragmento import (
     FragmentoSemantico,
     FragmentoFinal,
 )
+from .utils.errors import *
 
 
 class Visitor(ParserVisitor):
     def __init__(self):
         super().__init__()
-        self.errors: list[str] = []
-        self.warnings: list[str] = []
+        self.errors: list[SemanticError] = []
+        self.warnings: list[Warning] = []
 
     def _obtener_especificacion(
         self, ctx: Parser.ObraContext | Parser.FragmentoContext
@@ -54,15 +55,15 @@ class Visitor(ParserVisitor):
 
         for clave in claves[1:]:
             self.warnings.append(
-                f"Warning: clave duplicada en {ctx.especificacion(0).start.line}:{ctx.especificacion(0).start.column}"
+                ClaveDuplicationWarning(ctx.especificacion(0).start.line, ctx.especificacion(0).start.column, clave.value)
             )
         for compas in compases[1:]:
             self.warnings.append(
-                f"Warning: compás duplicado en {ctx.especificacion(0).start.line}:{ctx.especificacion(0).start.column}"
+                CompasDuplicationWarning(ctx.especificacion(0).start.line, ctx.especificacion(0).start.column, compas.value)
             )
         for armadura in armaduras[1:]:
             self.warnings.append(
-                f"Warning: armadura duplicada en {ctx.especificacion(0).start.line}:{ctx.especificacion(0).start.column}"
+                ArmaduraDuplicationWarning(ctx.especificacion(0).start.line, ctx.especificacion(0).start.column, ctx.especificacion(0).getText())
             )
 
         clave: Optional[Clave] = claves[-1] if claves else None
@@ -80,14 +81,14 @@ class Visitor(ParserVisitor):
         for fragmento in fragmentos:
             grafo_llamadas.add_node(fragmento)
 
-        for llamadas in filter(
+        for llamada in filter(
             lambda elemento: isinstance(elemento, FragmentoLlamado), obra.bloque_notas
         ):
-            if llamadas.nombre.upper() not in fragmentos:
+            if llamada.nombre.upper() not in fragmentos:
                 self.errors.append(
-                    f"{llamadas.linea}:{llamadas.columna}: Fragmento '{llamadas.nombre}' no definido"
+                    LlamadaNoDefinidaError(llamada.linea, llamada.columna, llamada.nombre)
                 )
-            grafo_llamadas.add_edge(obra.nombre, llamadas.nombre.upper())
+            grafo_llamadas.add_edge(obra.nombre, llamada.nombre.upper())
 
         for nombre, fragmento in fragmentos.items():
             for llamada in filter(
@@ -96,13 +97,13 @@ class Visitor(ParserVisitor):
             ):
                 if llamada.nombre.upper() not in fragmentos:
                     self.errors.append(
-                        f"{llamada.linea}:{llamada.columna}: Fragmento '{llamada.nombre}' no definido"
+                        LlamadaNoDefinidaError(llamada.linea, llamada.columna, llamada.nombre)
                     )
                 grafo_llamadas.add_edge(nombre, llamada.nombre.upper())
 
         for ciclo in simple_cycles(grafo_llamadas):
             self.errors.append(
-                f"Error: Ciclo en llamadas de fragmentos: {' -> '.join(ciclo + [ciclo[0]])}"
+                LlamadaCircularError(ciclo + [ciclo[0]])
             )
 
         fragmentos_usados = descendants(grafo_llamadas, obra.nombre)
@@ -111,7 +112,7 @@ class Visitor(ParserVisitor):
             lambda x: x[0] not in fragmentos_usados, fragmentos.items()
         ):
             self.warnings.append(
-                f"Warning: Fragmento '{nombre}' {fragmento.linea}:{fragmento.columna} no usado"
+                FragmentoNoUsadoWarning(fragmento.linea, fragmento.columna, nombre)
             )
 
     def visitPartitura(self, ctx: Parser.PartituraContext) -> ObraFinal:
@@ -123,7 +124,7 @@ class Visitor(ParserVisitor):
             for otro_fragmento in fragmentos[i + 1 :]:
                 if fragmento == otro_fragmento:
                     self.errors.append(
-                        f"{otro_fragmento.linea}:{otro_fragmento.columna}: Fragmento duplicado '{fragmento.nombre}'"
+                        FragmentoDuplicationError(otro_fragmento.linea, otro_fragmento.columna, fragmento.nombre)
                     )
 
         obra: ObraSemantica = self.visitObra(ctx.obra())
@@ -135,7 +136,7 @@ class Visitor(ParserVisitor):
         self._check_call_graph(dict_fragmentos, obra)
 
         if self.errors:
-            raise ValueError("\n".join(self.errors) + "\n" + "\n".join(self.warnings))
+            raise PartituneError(self.errors, self.warnings)
 
         for fragmento in dict_fragmentos.values():
             fragmento.bloque_notas = list(
@@ -180,7 +181,7 @@ class Visitor(ParserVisitor):
             return get_clave_from_partitune(ctx.NOTA_BASE().getText())
         except ValueError as e:
             self.errors.append(
-                f"{ctx.start.line}:{ctx.start.column}: {e}"
+                NotaClaveError(ctx.start.line, ctx.start.column, str(e))
             )
             return None
 
@@ -203,7 +204,7 @@ class Visitor(ParserVisitor):
 
         if hay_bemoles and hay_sostenidos:
             self.errors.append(
-                f"{ctx.nota_armadura(0).start.line}:{ctx.nota_armadura(0).start.column}: No se pueden mezclar bemoles y sostenidos en una armadura"
+                ModificadorArmaduraError(ctx.nota_armadura(0).start.line, ctx.nota_armadura(0).start.column)
             )
 
         notas_base: list[NotaBase] = list(map(lambda x: x[1], notas_armadura))
@@ -219,7 +220,7 @@ class Visitor(ParserVisitor):
             )
         except ValueError as e:
             self.errors.append(
-                f"{ctx.nota_armadura(0).start.line}:{ctx.nota_armadura(0).start.column}: {e}"
+                NotasArmaduraError(ctx.nota_armadura(0).start.line, ctx.nota_armadura(0).start.column, notas_base)
             )
             return None
 

@@ -11,6 +11,8 @@ from .generacion import generar_abc
 
 from .utils.logger import logger
 from .utils.logger_error_listener import LoggerErrorListener
+from .utils.errors import PartituneError, TituloError, DuracionCompasError, ComentarioError, CaracterNoReconocidoError
+from .utils.error_messages import get_str_from_warnings, get_str_from_errors
 
 
 # Para visualización gráfica
@@ -67,16 +69,17 @@ def generate_abc(input_file):
     visitor = Visitor()
 
     tokens.fill()
+    errores_lexicos = []
     for token in filter(lambda token: token.channel == Scanner.ERROR_CHANNEL, tokens.tokens):
         match token.type:
             case Scanner.TITULO_ERROR:
-                logger.error(f"Error en el título: {token.text}")
+                errores_lexicos.append(TituloError(token.line, token.column))
             case Scanner.COMPAS_DURATION_ERROR:
-                logger.error(f"Error en la duración del compás: {token.text}")
+                errores_lexicos.append(DuracionCompasError(token.line, token.column, token.text))
             case Scanner.BAD_COMMENT:
-                logger.error(f"Error en el comentario: {token.text}")
+                errores_lexicos.append(ComentarioError(token.line, token.column))
             case Scanner.UNKNOWN:
-                logger.error(f"Error en el archivo de entrada: {token.text}")
+                errores_lexicos.append(CaracterNoReconocidoError(token.line, token.column, token.text))
 
     try: 
         parse_tree = parser.partitura()
@@ -84,9 +87,11 @@ def generate_abc(input_file):
 
         obra = visitor.visit(parse_tree)
 
+        if errores_lexicos:
+            raise PartituneError(errores_lexicos, obra.warnings)
+
         if visitor.warnings:
-            logger.warning("Advertencias:")
-            logger.warning("\n".join(visitor.warnings))
+            logger.warning(get_str_from_warnings(visitor.warnings))
 
         abc_output = generar_abc(obra)
 
@@ -96,6 +101,10 @@ def generate_abc(input_file):
 
         logger.info(f"Archivo ABC generado: {output_file}")
 
+    except PartituneError as e:
+        logger.error(get_str_from_errors(e.lista_errores))
+        if e.lista_warnings:
+            logger.warning(get_str_from_warnings(e.lista_warnings))
     except Exception as e:
         logger.error("Error en el archivo de entrada:")
         logger.error(e)
