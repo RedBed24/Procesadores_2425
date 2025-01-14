@@ -12,7 +12,7 @@ from .generacion import generar_abc
 from .utils.logger import logger
 from .utils.logger_error_listener import LoggerErrorListener
 from .utils.errors import PartituneError, TituloError, DuracionCompasError, ComentarioError, CaracterNoReconocidoError
-from .utils.error_messages import get_str_from_warnings, get_str_from_errors
+from .utils.error_messages import get_str_from_warning, get_str_from_error
 
 
 # Para visualización gráfica
@@ -91,7 +91,8 @@ def generate_abc(input_file):
             raise PartituneError(errores_lexicos, obra.warnings)
 
         if visitor.warnings:
-            logger.warning(get_str_from_warnings(visitor.warnings))
+            for warning in visitor.warnings:
+                logger.warning(get_str_from_warning(visitor.warning))
 
         abc_output = generar_abc(obra)
 
@@ -102,9 +103,10 @@ def generate_abc(input_file):
         logger.info(f"Archivo ABC generado: {output_file}")
 
     except PartituneError as e:
-        logger.error(get_str_from_errors(e.lista_errores))
-        if e.lista_warnings:
-            logger.warning(get_str_from_warnings(e.lista_warnings))
+        for error in e.lista_errores:
+            logger.error(get_str_from_error(error))
+        for warning in e.lista_warnings:
+            logger.warning(get_str_from_warning(warning))
     except Exception as e:
         logger.error("Error en el archivo de entrada:")
         logger.error(e)
