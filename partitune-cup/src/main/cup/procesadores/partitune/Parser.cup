@@ -3,9 +3,10 @@ import java_cup.runtime.*;
 import java.io.*;
 import procesadores.partitune.partitune.*;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.stream.Collectors;
+import procesadores.partitune.AbcGenerator;
 
 parser code {:
 	public static void main(String args[]) throws Exception {
@@ -91,12 +92,14 @@ partitura::= lista_fragmentos:lf obra:obra
                 ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
                 : elemento)
             .collect(Collectors.toList()));
+	System.out.println("Partitura generada correctamente");
+	System.out.println(AbcGenerator.generateAbc(obra));
 	RESULT = obra;
 	}
 :};
 
 lista_fragmentos::= fragmento:f lista_fragmentos:lista {:lista.add(f); RESULT = lista; :} 
-				| {: List<FragmentoSemantico> lista = new ArrayList<>(); RESULT = lista; :};
+				| {: List<FragmentoSemantico> lista = new LinkedList<>(); RESULT = lista; :};
 
 obra::= OBRA TITULO:t LLAVE_IZQ lista_especificaciones:le bloque_notas:n LLAVE_DER {:
 	Obra o = new Obra(t, n);
@@ -122,7 +125,7 @@ obra::= OBRA TITULO:t LLAVE_IZQ lista_especificaciones:le bloque_notas:n LLAVE_D
 	| OBRA error {: System.out.println("Error en la declaracion de la obra"); RESULT = null; :};
 
 lista_especificaciones ::= especificacion:e lista_especificaciones:l {: l.add(e); RESULT = l; :} 
-						| {: List<Object> lista = new ArrayList<>(); RESULT = lista; :};
+						| {: List<Object> lista = new LinkedList<>(); RESULT = lista; :};
 
 especificacion::= clave:cl {: RESULT = cl; :}
 				| compas:c {: RESULT = c; :}
@@ -158,8 +161,8 @@ armadura::= ARMADURA IGUAL notas_armadura: lista
 	}
 :};
 
-notas_armadura::= bemol_sostenido:mod NOTA_BASE:n notas_armadura:lista {: lista.add(new NotaArmadura(mod, n)); RESULT = lista; :}
-				| bemol_sostenido:mod NOTA_BASE:n {: List<NotaArmadura> lista = new ArrayList<>(); lista.add(new NotaArmadura(mod, n)); RESULT = lista; :};
+notas_armadura::= bemol_sostenido:mod NOTA_BASE:n notas_armadura:lista {: lista.add(0,new NotaArmadura(mod, n)); RESULT = lista; :}
+				| bemol_sostenido:mod NOTA_BASE:n {: List<NotaArmadura> lista = new LinkedList<>(); lista.add(new NotaArmadura(mod, n)); RESULT = lista; :};
 
 posible_octava::= OCTAVA:o {: RESULT = o; :} 
 				| {: RESULT = Octava.NORMAL; :};
@@ -182,13 +185,13 @@ fragmento::= FRAGMENTO ID:id LLAVE_IZQ lista_especificaciones:le bloque_notas:bn
 
 bloque_notas::= LLAVE_IZQ lista_elementos:le LLAVE_DER {: RESULT = le; :};
 
-lista_elementos::= elemento:e lista_elementos:lista {: lista.add(e); RESULT = lista; :}
-				| elemento:e {: List<Object> lista = new ArrayList<>(); lista.add(e); RESULT = lista; :};
+lista_elementos::= elemento:e lista_elementos:lista {: lista.add(0,e); RESULT = lista; :}
+				| elemento:e {: List<Object> lista = new LinkedList<>(); lista.add(e); RESULT = lista; :};
 
 elemento::= repeticion:r {: RESULT =r; :}
 			| secuencia:s posible_fin_rep:rep {:
 				if (rep){
-					List<Secuencia> lista = new ArrayList<>();
+					List<Secuencia> lista = new LinkedList<>();
 					lista.add(s);
 					RESULT = new Repeticion(TipoRepeticion.CON_FINAL, lista);
 				} 
@@ -202,8 +205,8 @@ posible_fin_rep::= FINAL_REP {: RESULT=true; :}
 
 repeticion::= PRINCIPIO_REP lista_secuencias:ls FINAL_REP {: RESULT = new Repeticion(TipoRepeticion.CON_INICIO, ls); :};
 
-lista_secuencias ::= secuencia:s lista_secuencias:lista {: lista.add(s); RESULT = lista; :} 
-				 | secuencia:s {: List<Secuencia> lista = new ArrayList<>(); lista.add(s); RESULT = lista;:};
+lista_secuencias ::= secuencia:s lista_secuencias:lista {: lista.add(0,s); RESULT = lista; :} 
+				 | secuencia:s {: List<Secuencia> lista = new LinkedList<>(); lista.add(s); RESULT = lista;:};
 
 ligadura::= LIGADURA LLAVE_IZQ lista_secuencias:ls LLAVE_DER {:RESULT = new Ligadura(ls);:};
 
@@ -211,10 +214,10 @@ llamada::= ID:id {: RESULT = new FragmentoLlamado(id, idleft, idright); :};
 
 secuencia::= DURACION:d PARENTESIS_IZQ silencio_nota:lista_notas PARENTESIS_DER {: RESULT = new Secuencia(d, lista_notas); :};
 
-silencio_nota::= silencio_nota:lista SILENCIO {: lista.add(null); RESULT = lista; :} 
-			| silencio_nota:lista nota:n {: lista.add(n); RESULT = lista; :} 
-			| SILENCIO {: List<Nota> lista = new ArrayList<>(); lista.add(null);RESULT = lista; :} 
-			| nota:n {: List<Nota> lista = new ArrayList<>(); lista.add(n); RESULT = lista; :};
+silencio_nota::= silencio_nota:lista SILENCIO {: lista.add(0,null); RESULT = lista; :} 
+			| silencio_nota:lista nota:n {: lista.add(0,n); RESULT = lista; :} 
+			| SILENCIO {: List<Nota> lista = new LinkedList<>(); lista.add(null);RESULT = lista; :} 
+			| nota:n {: List<Nota> lista = new LinkedList<>(); lista.add(n); RESULT = lista; :};
 
 modificador::= BEMOL:b {: RESULT = b; :} 
 			| SOSTENIDO:s {: RESULT=s; :} 

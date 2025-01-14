@@ -188,6 +188,7 @@ public class AbcGenerator {
     StringBuilder resultado = new StringBuilder();
 
     for (String linea : abcCuerpo.split("\\n")) {
+        System.out.println(linea);
         // Si la línea define un nuevo compás o clave, añadirla directamente
         if (linea.startsWith("M:") || linea.startsWith("K:")) {
             resultado.append(linea).append("\n");
@@ -196,6 +197,7 @@ public class AbcGenerator {
 
         // Procesar cada elemento de la línea
         for (String elemento : linea.split(" ")) {
+            System.out.println(elemento);
             if (elemento.isEmpty()) {
                 continue; // Ignorar elementos vacíos
             }
@@ -203,7 +205,7 @@ public class AbcGenerator {
                 // Verificar si el elemento es una nota o un silencio
             if (esNotaOUnSilencio(elemento)) {
                 double duracionElemento = obtenerDuracion(elemento);
-
+                System.out.println(duracionElemento);
                 // Mientras el elemento exceda los pulsos restantes
                 while (duracionElemento > pulsosRestantes) {
                     resultado.append(dividirNota(elemento, pulsosRestantes)).append(" | ");
@@ -236,8 +238,20 @@ public class AbcGenerator {
     }
 
     private static String dividirNota(String elemento, double duracion) {
-        // Reemplazar la duración actual del elemento por la nueva duración
-        return elemento.replaceAll("[0-9/]+", String.valueOf(duracion));
+        // Convertir la duración a formato fraccionario si es necesario
+        if (duracion % 1 == 0) {
+            // Si es un número entero, se representa como un entero
+            return elemento.replaceAll("[0-9]+(/[0-9]+)?", String.valueOf((int) duracion));
+        } else {
+            // Si es fracción, calcular numerador y denominador
+            int numerador = (int) Math.round(duracion * 16); // Escalar a múltiplos de 16
+            int denominador = 16;
+            while (numerador % 2 == 0 && denominador > 1) {
+                numerador /= 2;
+                denominador /= 2; // Simplificar fracción
+            }
+            return elemento.replaceAll("[0-9]+(/[0-9]+)?", numerador + "/" + denominador);
+        }
     }
 
     private static boolean esNotaOUnSilencio(String elemento) {
@@ -246,30 +260,25 @@ public class AbcGenerator {
 
     private static double obtenerDuracion(String elemento) {
         // Extraer números y fracciones del elemento
-        String[] partes = elemento.split("[^0-9/]+");
-        if (partes.length == 0 || partes[0].isEmpty()) {
-            // Si no se encuentra una duración, devolver la duración predeterminada (negra = 1.0)
-            return 1.0;
-        }
-        if (partes[0].contains("/")) {
-            // Manejar fracciones (por ejemplo, 1/4)
-            String[] fraccion = partes[0].split("/");
-            if (fraccion.length == 2) {
-                try {
-                    double numerador = Double.parseDouble(fraccion[0]);
-                    double denominador = Double.parseDouble(fraccion[1]);
-                    return numerador / denominador;
-                } catch (NumberFormatException e) {
-                    // Si el formato no es válido, devolver duración predeterminada
-                    return 1.0;
-                }
+        List<Character> numeros = new ArrayList<>();
+        for (char c : elemento.toCharArray()) {
+            if (Character.isDigit(c)) {
+            numeros.add(c);
             }
         }
+        if (numeros.isEmpty()) {
+            return 1.0; 
+        }
+        if (numeros.size() == 1) {
+            return Double.parseDouble(numeros.get(0).toString());
+        }
         try {
-            // Manejar números enteros (por ejemplo, 1)
-            return Double.parseDouble(partes[0]);
+            double numerador = Double.parseDouble(numeros.get(0).toString());
+            double denominador = Double.parseDouble(numeros.get(1).toString());
+            return numerador / denominador;
         } catch (NumberFormatException e) {
-            return 1.0; // Si el formato no es válido, devolver duración predeterminada
+            // Si el formato no es válido, devolver duración predeterminada
+            return 1.0;
         }
     }
 
