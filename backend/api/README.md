@@ -44,10 +44,10 @@ Output, respuesta fallida:
 
 En desarrollo:
 ```bash
-uvicorn main:app --reload
+uvicorn src.main:app --reload
 ```
 
 En producción:
 ```bash
-uvicorn main:app
+uvicorn src.main:app
 ```
