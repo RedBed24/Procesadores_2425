@@ -191,9 +191,6 @@ def _procesar_bloque(bloque_notas: list, context: tuple) -> str:
             nueva_clave = clave_actual
             nuevo_compas = compas_actual
             nueva_armadura = armadura_actual
-            print(elemento.clave)
-            print(elemento.armadura)
-            print(elemento.compas)
             # Aplicar cambios de clave si están definidos en el fragmento
             if elemento.clave:
                 nueva_clave = elemento.clave
