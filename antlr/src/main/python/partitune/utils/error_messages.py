@@ -39,3 +39,7 @@ def get_str_from_error(error: LexerError | ParserError | SemanticError) -> str:
             return f"Llamada a fragmento no definido en línea {error.line}, columna {error.column}: {error.llamada}"
         case FragmentoDuplicationError():
             return f"Fragmento duplicado en línea {error.line}, columna {error.column}: {error.fragmento}"
+        case LigaduraNotasError():
+            return f"Ligadura con menos de 2 notas en línea {error.line}, columna {error.column}"
+        case LigaduraSilencioError():
+            return f"Ligadura con silencio en línea {error.line}, columna {error.column}"

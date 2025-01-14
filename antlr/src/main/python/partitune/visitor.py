@@ -251,8 +251,13 @@ class Visitor(ParserVisitor):
 
     def visitBloque_notas(
         self, ctx: Parser.Bloque_notasContext
-    ) -> list[Secuencia | FragmentoLlamado | Repeticion | Ligadura]:
-        return list(map(lambda elemento: self.visitElemento(elemento), ctx.elemento()))
+    ) -> list[Secuencia | FragmentoLlamado | Repeticion | Ligadura | None]:
+        return list(
+            filter(
+                lambda e: e,
+                map(lambda elemento: self.visitElemento(elemento), ctx.elemento()),
+            )
+        )
 
     def visitRepeticion(self, ctx: Parser.RepeticionContext) -> Repeticion:
         tipo_repeticion: TipoRepeticion = (
@@ -267,12 +272,22 @@ class Visitor(ParserVisitor):
             ),
         )
 
-    def visitLigadura(self, ctx: Parser.LigaduraContext) -> Ligadura:
-        return Ligadura(
-            secuencias=list(
-                map(lambda secuencia: self.visitSecuencia(secuencia), ctx.secuencia())
+    def visitLigadura(self, ctx: Parser.LigaduraContext) -> Ligadura | None:
+        try:
+            return Ligadura(
+                secuencias=list(
+                    map(
+                        lambda secuencia: self.visitSecuencia(secuencia),
+                        ctx.secuencia(),
+                    )
+                )
             )
-        )
+        except ValueError as e:
+            self.errors.append(LigaduraSilencioError(ctx.start.line, ctx.start.column))
+            return None
+        except AttributeError as e:
+            self.errors.append(LigaduraNotasError(ctx.start.line, ctx.start.column))
+            return None
 
     def visitLlamada(self, ctx: Parser.LlamadaContext) -> FragmentoLlamado:
         return FragmentoLlamado(

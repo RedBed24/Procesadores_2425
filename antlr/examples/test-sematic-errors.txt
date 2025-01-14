@@ -15,5 +15,10 @@ obra "Semantica" {
     {
         noDeclarado
         recursionNivelA
+        lig{ n(do) } /* ligadura incorrecta con sólo una nota */
+        lig{ n(do re) } /* ligadura valida */
+        lig{ n(do) n(re) } /* ligadura valida */
+        lig{ n(do -) } /* ligadura incorrecta con silencios */
+        lig{ n(do) n(-) } /* ligadura incorrecta con silencios */
     }
 }

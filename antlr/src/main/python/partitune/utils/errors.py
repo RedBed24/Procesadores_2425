@@ -91,3 +91,12 @@ class FragmentoDuplicationError(SemanticError):
     def __init__(self, line, column, fragmento: str):
         super().__init__(line, column)
         self.fragmento = fragmento
+
+class LigaduraError(SemanticError):
+    pass
+
+class LigaduraSilencioError(LigaduraError):
+    pass
+
+class LigaduraNotasError(LigaduraError):
+    pass
