@@ -1,5 +1,6 @@
 from fractions import Fraction
 from antlr4 import FileStream, CommonTokenStream, ParseTreeWalker
+from pyparsing import line
 from .analysis.Scanner import Scanner
 from .analysis.Parser import Parser
 from .visitor import Visitor
@@ -167,7 +168,7 @@ def _parse_clave(clave: Clave, armadura: Armadura | None) -> str:
         clave_str = " ".join(notas_posibles[:armadura.cantidad_modificadores])
     else:
         clave_str = "C"
-    return clave_map.get(clave, "") + clave_str
+    return clave_str + " " + clave_map.get(clave, "")
 
 
 def _procesar_bloque(bloque_notas: list, context: tuple) -> str:
@@ -190,7 +191,9 @@ def _procesar_bloque(bloque_notas: list, context: tuple) -> str:
             nueva_clave = clave_actual
             nuevo_compas = compas_actual
             nueva_armadura = armadura_actual
-
+            print(elemento.clave)
+            print(elemento.armadura)
+            print(elemento.compas)
             # Aplicar cambios de clave si están definidos en el fragmento
             if elemento.clave:
                 nueva_clave = elemento.clave
@@ -203,6 +206,7 @@ def _procesar_bloque(bloque_notas: list, context: tuple) -> str:
 
             # Insertar un salto de línea antes de comenzar el fragmento si hay cambios
             if cambios:
+                resultado.append("\n")
                 resultado.append("".join(cambios) + "\n")
 
             nuevo_contexto = (nueva_clave, nuevo_compas, nueva_armadura)
@@ -253,14 +257,17 @@ def _generar_lineas_divisorias(abc_cuerpo:str, obra_compas:Compas)-> str:
     pulsos = int(obra_compas.value.split("/")[0])
     pulsos_restantes:float = pulsos
     new_abc_cuerpo =''
+    print (abc_cuerpo)
 
     for linea in abc_cuerpo.split("\n"):
+        linea = linea.strip()
         if linea.startswith('M:'):
             pulsos =  int(linea.split(":")[1].split("/")[0])
             pulsos_restantes = pulsos
             new_abc_cuerpo += linea + "\n"
         elif linea.startswith('K:'):
             new_abc_cuerpo += linea + "\n"
+            pulsos_restantes = pulsos
         else:
             for elemento in linea.split(" "): # es un bloque?
                 if not _elemento_es_nota(elemento):
