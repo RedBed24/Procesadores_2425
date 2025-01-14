@@ -5,8 +5,8 @@ fragmento simple {
 } 
 
 fragmento intro { 
-    compas = 2/4   
-    armadura = b sol b sol
+    compas = 1/4   
+    armadura = b si
     /* test */
     compas = 3/4 
     { 
