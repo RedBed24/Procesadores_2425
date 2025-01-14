@@ -11,6 +11,7 @@ import java.lang.Character;
 %%
 
 %class Scanner
+%public
 %8bit
 
 %caseless

@@ -155,8 +155,8 @@ public class AbcGenerator {
                 Modificador.BEMOL, "_",
                 Modificador.BECUADRO, "="
         );
-
-        return modMap.getOrDefault(nota.getModificador(), "") + base;
+        String modificador = nota.getModificador() != null ? modMap.getOrDefault(nota.getModificador(), "") : "";
+        return modificador + base;
     }
 
     private static String duracionToAbc(Nota nota, Duracion duracion) {

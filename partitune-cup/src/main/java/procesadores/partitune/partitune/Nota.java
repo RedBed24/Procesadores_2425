@@ -7,7 +7,7 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class Nota {
     public @NonNull NotaBase nota_base;
-    public Modificador modificador = Modificador.BECUADRO;
+    public Modificador modificador = null;
     public Octava octava = Octava.NORMAL;
     public boolean puntillo = false;
     

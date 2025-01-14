@@ -226,4 +226,4 @@ posible_puntillo::= PUNTILLO {: RESULT = true; :}
 				| {: RESULT = false; :};
 
 posible_modificador ::= modificador:m {: RESULT = m; :}  
-					| {: RESULT = Modificador.BECUADRO; :};
+					| {: RESULT = null; :};

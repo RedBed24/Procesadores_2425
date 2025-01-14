@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>procesadores.partitune</groupId>
@@ -13,31 +13,61 @@
   </properties>
 
   <dependencies>
-     <!-- https://mvnrepository.com/artifact/de.jflex/jflex -->
+     <!-- JFlex  -->
      <dependency>
          <groupId>de.jflex</groupId>
          <artifactId>jflex</artifactId>
          <version>1.8.2</version>
      </dependency>
-     <!-- https://mvnrepository.com/artifact/edu.princeton.cup/java-cup -->
      
+     <!-- CUP  -->
      <dependency>
          <groupId>edu.princeton.cup</groupId>
          <artifactId>java-cup</artifactId>
          <version>10k</version>
      </dependency>
     
+    <!-- Lombok  -->
     <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>1.18.36</version>
         <scope>provided</scope>
     </dependency>
-
   </dependencies>
 
   <build>
     <plugins>
+      <!-- Maven Compiler Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+      </plugin>
+
+      <!-- Build Helper Plugin to include generated sources -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>target/generated-sources/jflex</source>
+                <source>target/generated-sources/cup</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- JFlex  -->
       <plugin>
         <groupId>de.jflex</groupId>
         <artifactId>jflex-maven-plugin</artifactId>
@@ -47,14 +77,11 @@
             <goals>
               <goal>generate</goal>
             </goals>
-            <configuration>
-              <verbose>true</verbose>
-              <!--<dump>true</dump>-->
-            </configuration>
           </execution>
         </executions>
       </plugin>
-      
+
+      <!-- CUP  -->
       <plugin>
         <groupId>com.github.vbmacher</groupId>
         <artifactId>cup-maven-plugin</artifactId>
@@ -67,33 +94,32 @@
           </execution>
         </executions>
         <configuration>
-	<packageName>procesadores.partitune</packageName>
+          <packageName>procesadores.partitune</packageName>
           <cupDefinition>src/main/cup/procesadores/partitune/Parser.cup</cupDefinition>
         </configuration>
       </plugin>
-     
 
+      <!-- Maven Shade Plugin -->
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-	      <version>3.6.0</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>procesadores.partitune.parser</mainClass>
-            </manifest>
-          </archive>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
-            <executions>
-                <execution>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>single</goal>
-                    </goals>
-                </execution>
-            </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.4.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>procesadores.partitune.Main</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
