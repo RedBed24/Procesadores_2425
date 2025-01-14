@@ -196,7 +196,11 @@ public class AbcGenerator {
 
         // Procesar cada elemento de la línea
         for (String elemento : linea.split(" ")) {
-            // Verificar si el elemento es una nota o un silencio
+            if (elemento.isEmpty()) {
+                continue; // Ignorar elementos vacíos
+            }
+            else {
+                // Verificar si el elemento es una nota o un silencio
             if (esNotaOUnSilencio(elemento)) {
                 double duracionElemento = obtenerDuracion(elemento);
 
@@ -222,6 +226,7 @@ public class AbcGenerator {
                 // Si no es nota ni silencio, agregarlo directamente
                 resultado.append(elemento).append(" ");
             }
+            } 
         }
 
         resultado.append("\n");
@@ -240,14 +245,34 @@ public class AbcGenerator {
     }
 
     private static double obtenerDuracion(String elemento) {
+        // Extraer números y fracciones del elemento
         String[] partes = elemento.split("[^0-9/]+");
-        if (partes.length == 0) return 1.0; // Default: negra
-        if (partes[0].contains("/")) {
-            String[] fraccion = partes[0].split("/");
-            return Double.parseDouble(fraccion[0]) / Double.parseDouble(fraccion[1]);
+        if (partes.length == 0 || partes[0].isEmpty()) {
+            // Si no se encuentra una duración, devolver la duración predeterminada (negra = 1.0)
+            return 1.0;
         }
-        return Double.parseDouble(partes[0]);
+        if (partes[0].contains("/")) {
+            // Manejar fracciones (por ejemplo, 1/4)
+            String[] fraccion = partes[0].split("/");
+            if (fraccion.length == 2) {
+                try {
+                    double numerador = Double.parseDouble(fraccion[0]);
+                    double denominador = Double.parseDouble(fraccion[1]);
+                    return numerador / denominador;
+                } catch (NumberFormatException e) {
+                    // Si el formato no es válido, devolver duración predeterminada
+                    return 1.0;
+                }
+            }
+        }
+        try {
+            // Manejar números enteros (por ejemplo, 1)
+            return Double.parseDouble(partes[0]);
+        } catch (NumberFormatException e) {
+            return 1.0; // Si el formato no es válido, devolver duración predeterminada
+        }
     }
+
 
     private static int obtenerPulsosPorCompas(Compas compas) {
         switch (compas) {
