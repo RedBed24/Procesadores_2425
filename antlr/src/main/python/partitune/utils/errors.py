@@ -56,9 +56,11 @@ class SemanticError(Exception):
         self.column = column
 
 class PartituneError(SemanticError):
-    pass
+    def __init__(self, lista_errores: list[SemanticError], lista_warnings: list[Warning]):
+        self.lista_errores = lista_errores
+        self.lista_warnings = lista_warnings
 
-class ArmaduraError(PartituneError):
+class ArmaduraError(SemanticError):
     pass
 
 class ModificadorArmaduraError(ArmaduraError):
@@ -69,22 +71,21 @@ class NotasArmaduraError(ArmaduraError):
         super().__init__(line, column)
         self.lista_notas = lista_notas
 
-class NotaClaveError(PartituneError):
+class NotaClaveError(SemanticError):
     def __init__(self, line: int, column: int, nota_clave: str):
         super().__init__(line, column)
         self.nota_clave = nota_clave
 
-class LlamadaCircularError(PartituneError):
+class LlamadaCircularError(SemanticError):
     def __init__(self, ciclo: list[str]):
-        super().__init__(-1, -1)
         self.ciclo = ciclo
 
-class LlamadaNoDefinidaError(PartituneError):
+class LlamadaNoDefinidaError(SemanticError):
     def __init__(self, line, column, llamada: str):
         super().__init__(line, column)
         self.llamada = llamada
 
-class FragmentoDuplicationError(PartituneError):
+class FragmentoDuplicationError(SemanticError):
     def __init__(self, line, column, fragmento: str):
         super().__init__(line, column)
         self.fragmento = fragmento
