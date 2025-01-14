@@ -46,7 +46,7 @@ import java.lang.Character;
                 int num_sym = KeyWords.getTokenType(yytext());
                 return symbol(num_sym, KeyWords.returnPartituneObject(num_sym, yytext()));
             } catch (Exception e){
-                System.out.printf(Errors.LEXER_ERROR_MESSAGES[Errors.LEXER_UNKNOWN_ERROR], yyline, yycolumn);
+                System.out.printf(Errors.lexerGetError(Errors.LEXER_UNKNOWN_ERROR, yyline, yycolumn));
                 System.out.println(e.getMessage());
             }
         } else {
@@ -56,7 +56,7 @@ import java.lang.Character;
 2\/4 | 3\/4 | 4\/4 | 6\/8 {
     return symbol(sym.COMPAS_DURACION, Compas.getCompasType(yytext()));
 }
-[0-9]*\/[0-9]* {System.out.printf(Errors.LEXER_ERROR_MESSAGES[Errors.LEXER_COMPAS_DURATION_ERROR], yyline, yycolumn);}
+[0-9]*\/[0-9]* {System.out.printf(Errors.lexerGetError(Errors.LEXER_COMPAS_DURATION_ERROR, yyline, yycolumn));}
 # { return symbol(sym.SOSTENIDO, Modificador.getModificadorType(sym.SOSTENIDO)); }
 ' | _ { return symbol(sym.OCTAVA, Octava.getOctaveType(yytext()));}
 \. { 
@@ -88,15 +88,15 @@ import java.lang.Character;
 \"[^\"]*\" {  
     return symbol(sym.TITULO, new String(yytext()));
 }
-\"[.|\n|\t]* { System.out.printf(Errors.LEXER_ERROR_MESSAGES[Errors.LEXER_UNFINISHED_TITLE], yyline, yycolumn); } // error título
+\"[.|\n|\t]* { System.out.printf(Errors.lexerGetError(Errors.LEXER_UNFINISHED_TITLE, yyline, yycolumn)); } // error título
 \/\* { yybegin(COMMENT); }
 " " | \n | \t | \r {}
-. { System.out.printf(Errors.LEXER_ERROR_MESSAGES[Errors.LEXER_UNKNOWN_ERROR]); }
+. { System.out.printf(Errors.lexerGetError(Errors.LEXER_UNRECOGNIZED_CHAR, yyline, yycolumn)); }
 }
 
 <COMMENT> {
 \*\/ { yybegin(YYINITIAL); }
 \n | \t | \r {}
-<<EOF>> { System.out.printf(Errors.LEXER_ERROR_MESSAGES[Errors.LEXER_COMMENT_ERROR], yyline, yycolumn); yybegin(YYINITIAL); }
+<<EOF>> { System.out.printf(Errors.lexerGetError(Errors.LEXER_COMMENT_ERROR, yyline, yycolumn)); yybegin(YYINITIAL); }
 . {}
 }

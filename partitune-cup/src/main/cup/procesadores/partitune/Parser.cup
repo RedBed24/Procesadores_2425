@@ -6,23 +6,29 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.stream.Collectors;
-import procesadores.partitune.AbcGenerator;
+import procesadores.partitune.utils.Errors;
 
 parser code {:
-	public static void main(String args[]) throws Exception {
- 		FileInputStream stream = new java.io.FileInputStream(args[0]);
-		Reader reader = new InputStreamReader(stream);
-		try{
-			new parser(new Scanner(reader)).parse();
-		}
-		catch ( Exception e) {
-			e.printStackTrace();
-			System.out.println("\nError durante el analisis");
-			System.exit(1);
-		}
-		System.out.println("\nAnalisis finalizado");
+	private List<String> errores = new LinkedList<>();
+	private List<String> warnings = new LinkedList<>();
+
+	public void report_error(String m) {
+        report_error(m, null);
+    }
+	public void report_error(String m, Object info) {
+		System.err.println(m);
+		errores.add(m.toString());
 	}
-:}
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+
+	public void report_warning(String m) {
+		System.out.println(m);
+		warnings.add(m.toString());
+	}
+:};
 
 
 /* ---------- Declaracion de simbolos de la gramatica ---------- */
@@ -39,7 +45,8 @@ terminal Duracion DURACION;
 
 non terminal Obra partitura, obra;
 non terminal List<FragmentoSemantico> lista_fragmentos;
-non terminal List<Object> lista_especificaciones, bloque_notas, lista_elementos; 
+non terminal List<Object> bloque_notas, lista_elementos; 
+non terminal Object[] lista_especificaciones;
 non terminal Object especificacion;
 non terminal Clave clave;
 non terminal Compas compas;
@@ -73,7 +80,7 @@ partitura::= lista_fragmentos:lf obra:obra
 			if (lf.get(i) == lf.get(j)) {
 				int linea = lf.get(j).getLinea();
 				int columna = lf.get(j).getColumna();
-				System.out.println("Error en la linea " + linea + " columna " + columna + ": Fragmento duplicado");
+				report_error(Errors.semanticGetError(Errors.SEMANTIC_DUPLICATE_FRAGMENT, linea, columna), null);
 			}
 		}
 	}
@@ -92,9 +99,9 @@ partitura::= lista_fragmentos:lf obra:obra
                 ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
                 : elemento)
             .collect(Collectors.toList()));
-	System.out.println("Partitura generada correctamente");
-	System.out.println(AbcGenerator.generateAbc(obra));
 	RESULT = obra;
+	if (errores.size() > 0)
+	 	RESULT = null;
 	}
 :};
 
@@ -106,42 +113,69 @@ obra::= OBRA TITULO:t LLAVE_IZQ lista_especificaciones:le bloque_notas:n LLAVE_D
 	Clave cl;
 	Compas c;
 	Armadura a;
-	for (Object especificacion : le) {
-		if(especificacion instanceof Clave){
-			cl = (Clave) especificacion;
-			o.setClave(cl);
-		}
-		else if(especificacion instanceof Compas){
-			c = (Compas) especificacion;
-			o.setCompas(c);
-		}
-		else if(especificacion instanceof Armadura){
-			a = (Armadura) especificacion;
-			o.setArmadura(a);
+	for (int i = 0; i < le.length; i++) {
+		if (le[i] == null) continue;
+		switch(i) {
+			case 0:
+				cl = (Clave) le[i];
+				o.setClave(cl);
+				break;
+			case 1:
+				c = (Compas) le[i];
+				o.setCompas(c);
+				break;
+			case 2:
+				a = (Armadura) le[i];
+				o.setArmadura(a);
+				break;
+			default:
+				break;
 		}
 	}
 	RESULT = o;
 :}
-	| OBRA error {: System.out.println("Error en la declaracion de la obra"); RESULT = null; :};
+	| OBRA error {: RESULT = null; :};
 
-lista_especificaciones ::= especificacion:e lista_especificaciones:l {: l.add(e); RESULT = l; :} 
-						| {: List<Object> lista = new LinkedList<>(); RESULT = lista; :};
+lista_especificaciones ::= lista_especificaciones:l especificacion:e  {:
+	if (e != null) {
+		switch(e) {
+			case Clave cl:
+				if (l[0] != null) report_warning(Errors.warningGetError(Errors.WARNING_DUPLICATE_KEY, eleft, eright));
+				l[0] = cl;
+				break;
+			case Compas c:
+				if (l[1] != null) report_warning(Errors.warningGetError(Errors.WARNING_DUPLICATE_COMPAS, eleft, eright));
+				l[1] = c;
+				break;
+			case Armadura a:
+				if (l[2] != null) report_warning(Errors.warningGetError(Errors.WARNING_DUPLICATE_ARMOR, eleft, eright));
+				break;
+			default: break;
+		}
+	}
+ 	RESULT = l; 
+ :} 
+						| {: 
+						Object [] lista = new Object[3]; RESULT = lista;
+						 :};
 
 especificacion::= clave:cl {: RESULT = cl; :}
 				| compas:c {: RESULT = c; :}
-				| armadura:a {: RESULT = a; :};
+				| armadura:a {: RESULT = a; :}
+				| error:e {: report_error("Syntax error, skipping", e); RESULT = null; :};
 
-clave::= CLAVE IGUAL NOTA_BASE:n {: 
+clave::= CLAVE IGUAL:i NOTA_BASE:n {: 
 	try {
 		RESULT = Clave.getClaveType(n);
 	}
 	catch (Exception e) {
-		System.out.println("Error al crear la clave, " + e.getMessage());
+		report_error(Errors.semanticGetError(Errors.SEMANTIC_WRONG_KEY, ileft, iright),i);
+		RESULT = null;
 	}
 :};
 
 compas::= COMPAS IGUAL COMPAS_DURACION:d {:RESULT = d; :} 
-		| COMPAS IGUAL error {: System.out.println("Error en la duracion del compas"); RESULT=null;:};
+		| COMPAS:c IGUAL {: RESULT=null; :};
 
 armadura::= ARMADURA IGUAL notas_armadura: lista 
 {:
@@ -151,13 +185,14 @@ armadura::= ARMADURA IGUAL notas_armadura: lista
 		if(n.getModificador() == ModificadorArmadura.BEMOL) hay_bemoles = true;
 		else if(n.getModificador() == ModificadorArmadura.SOSTENIDO) hay_sostenidos = true;
 	}
-	if(hay_bemoles && hay_sostenidos) System.out.println("No se pueden mezclar sostenidos y bemoles en una armadura");
+	if(hay_bemoles && hay_sostenidos) report_error(Errors.semanticGetError(Errors.SEMANTIC_MIXED_MODIFIERS, listaleft, listaright));
 	ModificadorArmadura mod = hay_bemoles ? ModificadorArmadura.BEMOL : ModificadorArmadura.SOSTENIDO;
 	try{
 		RESULT = new Armadura(mod, lista);
 	}
 	catch (Exception e) {
-		System.out.println("Error al crear la armadura, " + e.getMessage());
+		report_error(Errors.semanticGetError(Errors.SEMANTIC_WRONG_KEY_NOTES, listaleft, listaright));
+		RESULT = null;
 	}
 :};
 
@@ -208,15 +243,15 @@ repeticion::= PRINCIPIO_REP lista_secuencias:ls FINAL_REP {: RESULT = new Repeti
 lista_secuencias ::= secuencia:s lista_secuencias:lista {: lista.add(0,s); RESULT = lista; :} 
 				 | secuencia:s {: List<Secuencia> lista = new LinkedList<>(); lista.add(s); RESULT = lista;:};
 
-ligadura::= LIGADURA LLAVE_IZQ lista_secuencias:ls LLAVE_DER {:
+ligadura::= LIGADURA LLAVE_IZQ:llave lista_secuencias:ls LLAVE_DER {:
 	boolean error = false;
 	if(ls.size() < 2) {
-		System.err.println("Error en la ligadura, se necesitan al menos dos secuencias");
+		report_error(Errors.semanticGetError(Errors.SEMANTIC_TWO_ELEMENTS_IN_LIGATURE, llaveleft, llaveright));
 		error = true;
 	}
 	for (Secuencia s : ls) {
 		if (s.getNotas().contains(null)) {
-			System.err.println("Error en la ligadura, hay una nota nula");
+			report_error(Errors.semanticGetError(Errors.SEMANTIC_SILENCE_IN_LIGATURE, lsleft, lsright));
 			error = true;
 			break;
 		}
