@@ -5,24 +5,24 @@ fragmento simple {
 } 
 
 fragmento intro { 
-    compas = 1/4   
     armadura = b si
     /* test */
-    compas = 3/4 
+    compaS = 3/4 
     { 
-        n(re mi_)
+        n(re mi_ %si)
         Simple
-        lig { sc (fa' sol' la') }
-        |: n (do' re' mi') c (fa' %sol') :|
+        lig { sc (fa' SOL' la') }
+        |: n (do' - Mi') c (fa' %sol') :|
     } 
 } 
- 
+
 /* creacion de la obra con nombre "Las Cuatro Estaciones" */ 
 obra "Las Cuatro Estaciones" { 
-      compas = 3/4
-      clave = SOL
+      compas = 4/4
+      cLaVe = SOL
     { 
+        n (do re mi) :|
         intro 
-        f (do' re' mi') sc (fa' sol' la') 
+        f (do' re_ mi) sc (fa' sol la'.) 
     } 
 }
