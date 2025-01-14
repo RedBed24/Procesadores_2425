@@ -42,12 +42,6 @@ public class AbcGenerator {
 
     private static String parseClave(Clave clave, Armadura armadura) {
         StringBuilder claveStr = new StringBuilder();
-        switch (clave) {
-            case SOL -> claveStr.append("");
-            case FA -> claveStr.append("clef=bass");
-            case DO -> claveStr.append("clef=alto");
-        }
-
         if (armadura != null) {
             String[] notas = armadura.getTipo_modificacion() == ModificadorArmadura.BEMOL
                     ? new String[]{"F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"}
@@ -55,6 +49,11 @@ public class AbcGenerator {
             claveStr.append(" ").append(String.join(" ", Arrays.copyOf(notas, armadura.getCantidadModificadores())));
         } else {
             claveStr.append(" C");
+        }
+        switch (clave) {
+            case SOL -> claveStr.append("");
+            case FA -> claveStr.append("clef=bass");
+            case DO -> claveStr.append("clef=alto");
         }
 
         return claveStr.toString();
