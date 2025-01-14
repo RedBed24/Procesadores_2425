@@ -180,7 +180,7 @@ class Visitor(ParserVisitor):
             return get_clave_from_partitune(ctx.NOTA_BASE().getText())
         except ValueError as e:
             self.errors.append(
-                f"{ctx.NOTA_BASE().start.line}:{ctx.NOTA_BASE().start.column}: {e}"
+                f"{ctx.start.line}:{ctx.start.column}: {e}"
             )
             return None
 
