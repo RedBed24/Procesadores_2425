@@ -1,215 +1,181 @@
 package procesadores.partitune;
-import java.util.*;
-import java.util.regex.*;
-import java.math.BigInteger;
 
+import procesadores.partitune.partitune.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AbcGenerator {
 
-    private static String duracionToAbc(Nota nota, Duracion duracion) {
-       
-        // Sin puntillo
-        switch (duracion) {
-            case SEMIFUSA:      return "1/16";
-            case FUSA:          return "1/8";
-            case SEMICORCHEA:   return "1/4";
-            case CORCHEA:       return "1/2";
-            case NEGRA:         return "1";
-            case BLANCA:        return "2";
-            case REDONDA:       return "4";
-            default:            return "";
-        }
-        
+    public static String generateAbc(Obra obra) {
+        // Encabezado del archivo ABC
+        StringBuilder abcBuilder = new StringBuilder();
+        abcBuilder.append("X:1\n"); // Número de referencia
+        abcBuilder.append("T:").append(obra.getNombre()).append("\n"); // Título
+        abcBuilder.append("M:").append(parseCompas(obra.getCompas())).append("\n"); // Compás
+        abcBuilder.append("K:").append(parseClave(obra.getClave(), obra.getArmadura())).append("\n"); // Clave y armadura
+        abcBuilder.append("L:1/4\n"); // Valor de referencia de la nota (negra)
+
+        // Procesar el cuerpo de la obra
+        String cuerpo = procesarBloque(obra.getBloque_notas(), 
+                                       obra.getClave(), 
+                                       obra.getCompas(), 
+                                       obra.getArmadura());
+        abcBuilder.append(cuerpo);
+
+        return abcBuilder.toString();
     }
-
-    private static String procesarNota(Nota nota) {
-        // Mapeo de notas base
-        Map<String, String> notaBaseMap = new HashMap<>();
-        notaBaseMap.put("DO",  "C");
-        notaBaseMap.put("RE",  "D");
-        notaBaseMap.put("MI",  "E");
-        notaBaseMap.put("FA",  "F");
-        notaBaseMap.put("SOL", "G");
-        notaBaseMap.put("LA",  "A");
-        notaBaseMap.put("SI",  "B");
-
-        String base = notaBaseMap.getOrDefault(nota.getNotaBase().name(), "C");
-
-        // Mapeo de modificadores
-        String mod = "";
-        if (nota.getModificador() != null) {
-            switch (nota.getModificador()) {
-                case SOSTENIDO: mod = "^"; break;
-                case BEMOL:     mod = "_"; break;
-                case BECUADRO:  mod = "="; break;
-                default:        mod = "";
-            }
-        }
-
-        // Ajuste de octava (ejemplo: 'AGUDO' => minúscula, 'GRAVE' => añadir coma)
-        switch (nota.getOctava()) {
-            case AGUDO:
-                // minúscula
-                base = base.toLowerCase();
-                break;
-            case GRAVE:
-                // añade coma
-                base = base + ",";
-                break;
-            default:
-                // Sin modificación
-                break;
-        }
-
-        return mod + base;
-    }
-
-
-    private static String procesarSecuencia(Secuencia secuencia) {
-        List<String> notasAbc = new ArrayList<>();
-        for (Nota nota : secuencia.getListaNotas()) {
-            if (nota == null) {
-                // Silencio
-                notasAbc.add("z" + duracionToAbc(nota, secuencia.getDuracion()));
-            } else {
-                // Nota normal
-                String n = procesarNota(nota) + duracionToAbc(nota, secuencia.getDuracion());
-                notasAbc.add(n);
-            }
-        }
-        // Unimos con espacio
-        return String.join(" ", notasAbc);
-    }
-
 
     private static String parseCompas(Compas compas) {
-        // Asume compas.value como "4/4", "3/4", etc.
-        return compas.getValue();
+        switch (compas) {
+            case DOSPORCUATRO:
+                return "2/4";
+            case TRESPORCUATRO:
+                return "3/4";
+            case CUATROPORCUATRO:
+                return "4/4";
+            case SEISPOROCHO:
+                return "6/8";
+            default:
+                throw new IllegalArgumentException("Compas no válido: " + compas);
+        }
     }
 
-    private static String procesarBloque(List<Object> bloqueNotas, Clave claveActual, Compas compasActual, Armadura armaduraActual) {
-        StringBuilder sb = new StringBuilder();
+    private static String parseClave(Clave clave, Armadura armadura) {
+        StringBuilder claveStr = new StringBuilder();
+        switch (clave) {
+            case SOL -> claveStr.append("");
+            case FA -> claveStr.append("clef=bass");
+            case DO -> claveStr.append("clef=alto");
+        }
+
+        if (armadura != null) {
+            String[] notas = armadura.getTipo_modificacion() == ModificadorArmadura.BEMOL
+                    ? new String[]{"F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"}
+                    : new String[]{"G", "D", "A", "E", "B", "F#", "C#"};
+            claveStr.append(" ").append(String.join(" ", Arrays.copyOf(notas, armadura.getCantidadModificadores())));
+        } else {
+            claveStr.append(" C");
+        }
+
+        return claveStr.toString();
+    }
+
+    private static String procesarBloque(List<Object> bloqueNotas, Clave clave, Compas compas, Armadura armadura) {
+        StringBuilder resultado = new StringBuilder();
 
         for (Object elemento : bloqueNotas) {
             if (elemento instanceof Secuencia) {
-                sb.append(procesarSecuencia((Secuencia) elemento)).append(" ");
-            }
-            // else if (elemento instanceof Repeticion) {
-            //     sb.append(procesarRepeticion((Repeticion) elemento)).append(" ");
-            // }
-            // else if (elemento instanceof Ligadura) {
-            //     sb.append(procesarLigadura((Ligadura) elemento)).append(" ");
-            // }
-            else if (elemento instanceof Fragmento) {
-                Fragmento fragmento = (Fragmento) elemento;
-                List<String> cambios = new ArrayList<>();
-
-                // Claves y armaduras
-                Clave nuevaClave = claveActual;
-                Armadura nuevaArmadura = armaduraActual;
-                if (fragmento.getClave() != null) {
-                    nuevaClave = fragmento.getClave();
-                    nuevaArmadura = fragmento.getArmadura();
-                    cambios.add("K:" + parseClave(nuevaClave, nuevaArmadura));
+                resultado.append(procesarSecuencia((Secuencia) elemento));
+            } else if (elemento instanceof Repeticion) {
+                resultado.append(procesarRepeticion((Repeticion) elemento));
+            } else if (elemento instanceof Ligadura) {
+                resultado.append(procesarLigadura((Ligadura) elemento));
+            } else if (elemento instanceof FragmentoSemantico fragmentoSemantico) {
+                if (fragmentoSemantico.getClave() != null || fragmentoSemantico.getCompas() != null) {
+                    if (fragmentoSemantico.getClave() != null) {
+                        resultado.append("K:").append(parseClave(fragmentoSemantico.getClave(), fragmentoSemantico.getArmadura())).append("\n");
+                    }
+                    if (fragmentoSemantico.getCompas() != null) {
+                        resultado.append("M:").append(parseCompas(fragmentoSemantico.getCompas())).append("\n");
+                    }
                 }
 
-                // Compás
-                Compas nuevoCompas = compasActual;
-                if (fragmento.getCompas() != null) {
-                    nuevoCompas = fragmento.getCompas();
-                    cambios.add("M:" + parseCompas(nuevoCompas));
-                }
-
-                if (!cambios.isEmpty()) {
-                    sb.append(String.join("", cambios)).append("\n");
-                }
-
-                // Procesar recursivamente
-                String contenidoFrag = procesarBloque(fragmento.getBloqueNotas(), nuevaClave, nuevoCompas, nuevaArmadura);
-                sb.append(contenidoFrag).append("\n");
-
-                List<String> reversiones = new ArrayList<>();
-                if (fragmento.getClave() != null) {
-                    reversiones.add("K:" + parseClave(claveActual, armaduraActual));
-                }
-                if (fragmento.getCompas() != null) {
-                    reversiones.add("M:" + parseCompas(compasActual));
-                }
-                if (!reversiones.isEmpty()) {
-                    sb.append(String.join("", reversiones)).append("\n");
+                resultado.append(procesarBloque(fragmentoSemantico.getSecuencias(), 
+                                               fragmentoSemantico.getClave() != null ? fragmentoSemantico.getClave() : clave,
+                                               fragmentoSemantico.getCompas() != null ? fragmentoSemantico.getCompas() : compas,
+                                               fragmentoSemantico.getArmadura() != null ? fragmentoSemantico.getArmadura() : armadura)).append("\n");
+            } else if (elemento instanceof Fragmento fragmento) {
+                if (fragmento.getClave() != null || fragmento.getCompas() != null) {
+                    if (fragmento.getClave() != null) {
+                        resultado.append("K:").append(parseClave(fragmento.getClave(), fragmento.getArmadura())).append("\n");
+                    }
+                    if (fragmento.getCompas() != null) {
+                        resultado.append("M:").append(parseCompas(fragmento.getCompas())).append("\n");
+                    }
                 }
             }
         }
 
-        return sb.toString();
+        return resultado.toString();
     }
 
-
-    private static boolean elementoEsNota(String elemento) {
-        String upper = elemento.toUpperCase();
-        return (upper.contains("C") 
-             || upper.contains("D")
-             || upper.contains("E")
-             || upper.contains("F")
-             || upper.contains("G")
-             || upper.contains("A")
-             || upper.contains("B")
-             || upper.contains("Z"));
+    private static String procesarSecuencia(Secuencia secuencia) {
+        return secuencia.getNotas().stream()
+                .map(nota -> {
+                    if (nota == null) {
+                        return "z" + duracionToAbc(null, secuencia.getDuracion());
+                    } else {
+                        return procesarNota(nota) + duracionToAbc(nota, secuencia.getDuracion());
+                    }
+                })
+                .collect(Collectors.joining(" "));
     }
 
+    private static String procesarRepeticion(Repeticion repeticion) {
+        String cuerpo = repeticion.getSecuencias().stream()
+                .map(AbcGenerator::procesarSecuencia)
+                .collect(Collectors.joining(" "));
 
-    private static float valorDuracion(String elemento) {
-        Pattern pattern = Pattern.compile("\\d+");
-        Matcher matcher = pattern.matcher(elemento);
-        
-        List<Integer> nums = new ArrayList<>();
-        while (matcher.find()) {
-            nums.add(Integer.parseInt(matcher.group()));
+        if (repeticion.getTipo_repeticion() == TipoRepeticion.CON_INICIO) {
+            return "|: " + cuerpo + " :|";
+        } else {
+            return cuerpo + " :|";
         }
-
-        if (nums.isEmpty()) {
-            return 1.0f;
-        }
-        int numerador = nums.get(0);
-        int denominador = (nums.size() > 1) ? nums.get(1) : 1;
-        return (float) numerador / (float) denominador;
     }
 
-    public static String generarAbc(Obra obra) {
-        List<String> abcLines = new ArrayList<>();
-        // Encabezado
-        abcLines.add("X:1");                       // referencia
-        abcLines.add("T:" + obra.getNombre());     // título
-        abcLines.add("M:" + parseCompas(obra.getCompas()));
-        abcLines.add("K:" + parseClave(obra.getClave(), obra.getArmadura()));
+    private static String procesarLigadura(Ligadura ligadura) {
+        return ligadura.getSecuencias().stream()
+                .map(secuencia -> "(" + procesarSecuencia(secuencia) + ")")
+                .collect(Collectors.joining(" "));
+    }
 
-        // Procesamos el bloque de notas
-        String cuerpo = procesarBloque(
-                obra.getBloqueNotas(),
-                obra.getClave(),
-                obra.getCompas(),
-                obra.getArmadura()
+    private static String procesarNota(Nota nota) {
+        Map<NotaBase, String> notaBaseMap = Map.of(
+                NotaBase.DO, "C",
+                NotaBase.RE, "D",
+                NotaBase.MI, "E",
+                NotaBase.FA, "F",
+                NotaBase.SOL, "G",
+                NotaBase.LA, "A",
+                NotaBase.SI, "B"
         );
 
-        // Insertamos las líneas divisorias
-        cuerpo = generarLineasDivisorias(cuerpo, obra.getCompas());
-        abcLines.add(cuerpo);
+        String base = notaBaseMap.getOrDefault(nota.getNota_base(), "C");
+        if (nota.getOctava() == Octava.AGUDO) {
+            base = base.toLowerCase();
+        } else if (nota.getOctava() == Octava.GRAVE) {
+            base += ",";
+        }
 
-        // Unir todo
-        return String.join("\n", abcLines);
+        Map<Modificador, String> modMap = Map.of(
+                Modificador.SOSTENIDO, "^",
+                Modificador.BEMOL, "_",
+                Modificador.BECUADRO, "="
+        );
+
+        return modMap.getOrDefault(nota.getModificador(), "") + base;
     }
 
-    
-    public static void generateAbc(String inputFile) throws Exception {
-        
-        // Obtener la obra
-        Obra obra = listener.getObra();
+    private static String duracionToAbc(Nota nota, Duracion duracion) {
+        Map<Duracion, String> duracionMap = nota != null && nota.isPuntillo()
+                ? Map.of(
+                Duracion.SEMIFUSA, "3/32",
+                Duracion.FUSA, "3/16",
+                Duracion.SEMICORCHEA, "3/8",
+                Duracion.CORCHEA, "3/4",
+                Duracion.NEGRA, "3/2",
+                Duracion.BLANCA, "3",
+                Duracion.REDONDA, "6"
+        ) : Map.of(
+                Duracion.SEMIFUSA, "1/16",
+                Duracion.FUSA, "1/8",
+                Duracion.SEMICORCHEA, "1/4",
+                Duracion.CORCHEA, "1/2",
+                Duracion.NEGRA, "1",
+                Duracion.BLANCA, "2",
+                Duracion.REDONDA, "4"
+        );
 
-        // Generar la notación ABC
-        String abc = generarAbc(obra);
-
-        // Imprimir o guardar
-        System.out.println(abc);
+        return duracionMap.getOrDefault(duracion, "");
     }
-
 }
