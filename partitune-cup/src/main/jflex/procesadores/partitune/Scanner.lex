@@ -26,7 +26,7 @@ import java.lang.Character;
 %column
 
 %{ /*-------- Custom symbol to store line and column information --------*/
-    /* TODO */
+
     private Symbol symbol(int type){
         return new Symbol(type, yyline, yycolumn);
     }
