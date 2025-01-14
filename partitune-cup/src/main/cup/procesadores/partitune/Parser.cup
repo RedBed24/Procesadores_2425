@@ -264,10 +264,10 @@ llamada::= ID:id {: RESULT = new FragmentoLlamado(id, idleft, idright); :};
 
 secuencia::= DURACION:d PARENTESIS_IZQ silencio_nota:lista_notas PARENTESIS_DER {: RESULT = new Secuencia(d, lista_notas); :};
 
-silencio_nota::= silencio_nota:lista SILENCIO {: lista.add(0,null); RESULT = lista; :} 
-			| silencio_nota:lista nota:n {: lista.add(0,n); RESULT = lista; :} 
-			| SILENCIO {: List<Nota> lista = new LinkedList<>(); lista.add(null);RESULT = lista; :} 
-			| nota:n {: List<Nota> lista = new LinkedList<>(); lista.add(n); RESULT = lista; :};
+silencio_nota::= SILENCIO silencio_nota:lista {: lista.add(0,null); RESULT = lista; :} 
+			| nota:n silencio_nota:lista {: lista.add(0,n); RESULT = lista; :} 
+			| SILENCIO {: List<Nota> lista = new LinkedList<>(); lista.add(0,null);RESULT = lista; :} 
+			| nota:n {: List<Nota> lista = new LinkedList<>(); lista.add(0,n); RESULT = lista; :};
 
 modificador::= BEMOL:b {: RESULT = b; :} 
 			| SOSTENIDO:s {: RESULT=s; :} 
