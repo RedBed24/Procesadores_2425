@@ -1,0 +1,17 @@
+fragmento noUsado {
+    {
+        n (do re)
+    }
+}
+
+obra "Warnings" {
+    compas = 4/4
+    compas = 3/4
+    clave = SOL
+    clave = sol
+    armadura = b si
+    armadura = b si
+    {
+        n (do re)
+    }
+}
