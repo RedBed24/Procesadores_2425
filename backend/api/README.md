@@ -8,7 +8,7 @@ Documentacuón de la API de la aplicación.
 
 Devuelve un mensaje de confirmación de que el servidor está activo.
 
-### POST /generate_abc
+### POST /generateABC
 
 El endpoint /generate_abc recibe un archivo en formato partitune, llama al compilador de partitune y devuelve el archivo en formato abc o un mensajde de error si no se pudo generar el archivo.
 
@@ -18,7 +18,7 @@ Input:
 
 Ejemplo:
 ```bash
-curl -X POST "http://localhost:8000/generate_abc" -F "file=@path/to/your/file.partitune"
+curl -X POST "http://localhost:8000/generateABC" -F "file=@path/to/your/file.partitune"
 ```
 
 Output, respuesta exitosa:

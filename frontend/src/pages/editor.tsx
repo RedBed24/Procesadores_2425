@@ -23,7 +23,7 @@ export const EditorPartitune: React.FC = () => {
       const abcBlob = new Blob([musicText], { type: 'text/plain' });
       formData.append('file', abcBlob, 'music.abc');
 
-      const response = await fetch('/generate_abc', { //send to backend
+      const response = await fetch('/generateABC', { //send to backend
         method: 'POST',
         body: formData,
       });
