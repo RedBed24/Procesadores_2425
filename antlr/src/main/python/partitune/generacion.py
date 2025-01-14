@@ -290,7 +290,6 @@ def _generar_lineas_divisorias(abc_cuerpo:str, obra_compas:Compas)-> str:
                     new_abc_cuerpo += elemento + " "
                     pulsos_restantes -= valor_nota
             new_abc_cuerpo += "\n"
-    print(repr(new_abc_cuerpo))
     return new_abc_cuerpo
 
 def generar_abc(obra: Obra) -> str:
