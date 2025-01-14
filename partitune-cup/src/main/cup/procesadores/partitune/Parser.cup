@@ -200,7 +200,7 @@ elemento::= repeticion:r {: RESULT =r; :}
 			| ligadura:l {: RESULT = l;:}
 			| llamada: ll {: RESULT = ll; :};
 
-posible_fin_rep::= FINAL_REP {: RESULT=true; :} 
+posible_fin_rep::= FINAL_REP {: RESULT = true; :} 
 				| {: RESULT = false; :} ;
 
 repeticion::= PRINCIPIO_REP lista_secuencias:ls FINAL_REP {: RESULT = new Repeticion(TipoRepeticion.CON_INICIO, ls); :};
@@ -208,7 +208,21 @@ repeticion::= PRINCIPIO_REP lista_secuencias:ls FINAL_REP {: RESULT = new Repeti
 lista_secuencias ::= secuencia:s lista_secuencias:lista {: lista.add(0,s); RESULT = lista; :} 
 				 | secuencia:s {: List<Secuencia> lista = new LinkedList<>(); lista.add(s); RESULT = lista;:};
 
-ligadura::= LIGADURA LLAVE_IZQ lista_secuencias:ls LLAVE_DER {:RESULT = new Ligadura(ls);:};
+ligadura::= LIGADURA LLAVE_IZQ lista_secuencias:ls LLAVE_DER {:
+	boolean error = false;
+	if(ls.size() < 2) {
+		System.err.println("Error en la ligadura, se necesitan al menos dos secuencias");
+		error = true;
+	}
+	for (Secuencia s : ls) {
+		if (s.getNotas().contains(null)) {
+			System.err.println("Error en la ligadura, hay una nota nula");
+			error = true;
+			break;
+		}
+	}
+	RESULT = error ? null : new Ligadura(ls);
+:};
 
 llamada::= ID:id {: RESULT = new FragmentoLlamado(id, idleft, idright); :};
 
