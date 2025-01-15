@@ -201,6 +201,7 @@ public class AbcGenerator {
         
             if (linea.startsWith("M:") || linea.startsWith("K:")) {
                 resultado.append(linea).append("\n");
+                pulsosRestantes = pulsosTotales;
                 continue;
             }
 

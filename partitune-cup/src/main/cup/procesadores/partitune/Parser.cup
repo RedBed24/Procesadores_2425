@@ -92,20 +92,6 @@ partitura::= lista_fragmentos:lf obra:obra
     f -> f,
     (existing, replacement) -> replacement));
 
- 	for (FragmentoSemantico fragmento : dictFragmentos.values()) {
-            fragmento.setSecuencias(fragmento.getSecuencias().stream()
-                .map(elemento -> (elemento instanceof FragmentoLlamado)
-                    ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
-                    : elemento)
-                .collect(Collectors.toList()));
-        }
-	if (obra.getBloque_notas() != null) {
-	obra.setBloque_notas(obra.getBloque_notas().stream()
-            .map(elemento -> (elemento instanceof FragmentoLlamado)
-                ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
-                : elemento)
-            .collect(Collectors.toList()));
-	}
 	// fragmentos no usados
 	Set<String> usados = new HashSet<>();
 
@@ -131,6 +117,21 @@ partitura::= lista_fragmentos:lf obra:obra
 			int columna = dictFragmentos.get(nombre).getColumna();
 			report_warning(Errors.warningGetError(Errors.WARNING_FRAGMENT_NOT_USED, linea, columna));
 		}
+	}
+
+ 	for (FragmentoSemantico fragmento : dictFragmentos.values()) {
+            fragmento.setSecuencias(fragmento.getSecuencias().stream()
+                .map(elemento -> (elemento instanceof FragmentoLlamado)
+                    ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
+                    : elemento)
+                .collect(Collectors.toList()));
+        }
+	if (obra.getBloque_notas() != null) {
+	obra.setBloque_notas(obra.getBloque_notas().stream()
+            .map(elemento -> (elemento instanceof FragmentoLlamado)
+                ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
+                : elemento)
+            .collect(Collectors.toList()));
 	}
 	RESULT = obra;
 	if (errores.size() > 0)
