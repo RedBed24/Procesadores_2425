@@ -24,5 +24,6 @@ obra "Las Cuatro Estaciones" {
     { 
         intro 
         f (do' re' mi') sc (fa' sol' la') 
+        lig { sc (RE) }
     } 
 }
