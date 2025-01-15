@@ -86,6 +86,16 @@ class Visitor(ParserVisitor):
 
         return clave, compas, armadura
 
+    def _obtener_elementos(self, ctx: Parser.Bloque_notasContext | Parser.Error_repeticionContext | Parser.Error_ligaduraContext) -> list[Secuencia | FragmentoLlamado | Repeticion | Ligadura]:
+        elementos = list(
+            filter(
+                lambda e: e,
+                map(lambda elemento: self.visitElemento(elemento), ctx.elemento()),
+            )
+        )
+        listas = list(filter(lambda e: isinstance(e, list), elementos))
+        return elementos + [elemento for lista in listas for elemento in lista]
+
     def _check_call_graph(
         self, fragmentos: dict[str, FragmentoSemantico], obra: ObraSemantica
     ) -> None:
@@ -184,6 +194,8 @@ class Visitor(ParserVisitor):
         return obra
 
     def visitObra(self, ctx: Parser.ObraContext) -> ObraSemantica:
+        if ctx.error_obra():
+            return self.visitError_obra(ctx.error_obra())
         nombre: str = ctx.TITULO().getText()
 
         clave, compas, armadura = self._obtener_especificacion(ctx)
@@ -195,6 +207,44 @@ class Visitor(ParserVisitor):
             compas=compas,
             armadura=armadura,
         )
+
+    def visitError_obra(self, ctx:Parser.Error_obraContext) -> ObraSemantica:
+        self.errors.append(
+            GenericParserError(
+                ctx.start.line,
+                ctx.start.column,
+                Parser.RULE_obra,
+                Parser.ID if ctx.ID() else Parser.TITULO,
+                ctx.ID().getText() if ctx.ID() else ctx.TITULO().getText(),
+                [Parser.OBRA],
+                ctx,
+            )
+        )
+        nombre: str = ctx.TITULO().getText()
+
+        clave, compas, armadura = self._obtener_especificacion(ctx)
+
+        return ObraSemantica(
+            nombre=nombre,
+            bloque_notas=self.visitBloque_notas(ctx.bloque_notas()),
+            clave=clave,
+            compas=compas,
+            armadura=armadura,
+        )
+
+    def visitError_especificacion(self, ctx: Parser.Error_especificacionContext) -> None:
+        self.errors.append(
+            GenericParserError(
+                ctx.start.line,
+                ctx.start.column,
+                Parser.RULE_especificacion,
+                Parser.ID,
+                ctx.ID().getText(),
+                [Parser.CLAVE, Parser.COMPAS, Parser.ARMADURA],
+                ctx,
+            )
+        )
+        return None
 
     def visitClave(self, ctx: Parser.ClaveContext) -> Clave | None:
         try:
@@ -259,6 +309,8 @@ class Visitor(ParserVisitor):
         return modificador_armadura, nota_base
 
     def visitFragmento(self, ctx: Parser.FragmentoContext) -> FragmentoSemantico:
+        if ctx.error_fragmento():
+            return self.visitError_fragmento(ctx.error_fragmento())
         nombre: str = ctx.ID().getText()
 
         clave, compas, armadura = self._obtener_especificacion(ctx)
@@ -273,17 +325,41 @@ class Visitor(ParserVisitor):
             armadura=armadura,
         )
 
-    def visitBloque_notas(
-        self, ctx: Parser.Bloque_notasContext
-    ) -> list[Secuencia | FragmentoLlamado | Repeticion | Ligadura | None]:
-        return list(
-            filter(
-                lambda e: e,
-                map(lambda elemento: self.visitElemento(elemento), ctx.elemento()),
+    def visitError_fragmento(self, ctx:Parser.Error_fragmentoContext) -> FragmentoSemantico:
+        self.errors.append(
+            GenericParserError(
+                ctx.start.line,
+                ctx.start.column,
+                Parser.RULE_fragmento,
+                Parser.ID,
+                ctx.ID(0).getText(),
+                [Parser.FRAGMENTO],
+                ctx,
             )
         )
+        nombre: str = ctx.ID(len(ctx.ID())-1).getText()
 
-    def visitRepeticion(self, ctx: Parser.RepeticionContext) -> Repeticion:
+        clave, compas, armadura = self._obtener_especificacion(ctx)
+
+        return FragmentoSemantico(
+            nombre=nombre,
+            bloque_notas=self.visitBloque_notas(ctx.bloque_notas()),
+            linea=ctx.start.line,
+            columna=ctx.start.column,
+            clave=clave,
+            compas=compas,
+            armadura=armadura,
+        )
+
+
+    def visitBloque_notas(
+        self, ctx: Parser.Bloque_notasContext
+    ) -> list[Secuencia | FragmentoLlamado | Repeticion | Ligadura]:
+        return self._obtener_elementos(ctx)
+
+    def visitRepeticion(self, ctx: Parser.RepeticionContext) -> Repeticion | list[FragmentoLlamado]:
+        if ctx.error_repeticion():
+            return self.visitError_repeticion(ctx.error_repeticion())
         tipo_repeticion: TipoRepeticion = (
             TipoRepeticion.CON_INICIO
             if ctx.PRINCIPIO_REP()
@@ -296,7 +372,15 @@ class Visitor(ParserVisitor):
             ),
         )
 
-    def visitLigadura(self, ctx: Parser.LigaduraContext) -> Ligadura | None:
+    def visitError_repeticion(self, ctx:Parser.Error_repeticionContext) -> list[FragmentoLlamado]:
+        self.errors.append(
+            RepeticionError(ctx.start.line, ctx.start.column, ctx.stop.line, ctx.stop.column, ctx)
+        )
+        return filter(lambda e: isinstance(e, FragmentoLlamado), self._obtener_elementos(ctx))
+        
+    def visitLigadura(self, ctx: Parser.LigaduraContext) -> Ligadura | None | list[FragmentoLlamado]:
+        if ctx.error_ligadura():
+            return self.visitError_ligadura(ctx.error_ligadura())
         try:
             return Ligadura(
                 secuencias=list(
@@ -312,6 +396,37 @@ class Visitor(ParserVisitor):
         except AttributeError as e:
             self.errors.append(LigaduraNotasError(ctx.start.line, ctx.start.column))
             return None
+
+    def visitError_ligadura(self, ctx:Parser.Error_ligaduraContext) -> list[FragmentoLlamado]:
+        elementos = self._obtener_elementos(ctx)
+        if any(not isinstance(e, Secuencia) for e in elementos):
+            self.errors.append(
+                LigaduraError(ctx.start.line, ctx.start.column, ctx.stop.line, ctx.stop.column, ctx)
+            )
+        if ctx.ID():
+            self.errors.append(
+                GenericParserError(
+                    ctx.start.line,
+                    ctx.start.column,
+                    Parser.RULE_elemento,
+                    Parser.ID,
+                    ctx.ID().getText(),
+                    [Parser.LIGADURA],
+                    ctx,
+                )
+            )
+        try:
+            Ligadura(
+                secuencias=list(
+                    filter(lambda e: isinstance(e, Secuencia), elementos)
+                ),
+            )
+        except ValueError as e:
+            self.errors.append(LigaduraSilencioError(ctx.start.line, ctx.start.column))
+        except AttributeError as e:
+            self.errors.append(LigaduraNotasError(ctx.start.line, ctx.start.column))
+
+        return filter(lambda e: isinstance(e, FragmentoLlamado), elementos)
 
     def visitLlamada(self, ctx: Parser.LlamadaContext) -> FragmentoLlamado:
         return FragmentoLlamado(
@@ -339,7 +454,9 @@ class Visitor(ParserVisitor):
             else Modificador.SOSTENIDO if ctx.SOSTENIDO() else Modificador.BECUADRO
         )
 
-    def visitNota(self, ctx: Parser.NotaContext) -> Nota:
+    def visitNota(self, ctx: Parser.NotaContext) -> Nota | None:
+        if ctx.error_nota():
+            return None
         nota_base: NotaBase = get_nota_base_from_partitune(ctx.NOTA_BASE().getText())
         modificador: Optional[Modificador] = (
             self.visitModificador(ctx.modificador()) if ctx.modificador() else None
