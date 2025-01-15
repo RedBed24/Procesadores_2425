@@ -29,9 +29,9 @@ def get_str_from_error(error: LexerError | ParserError | SemanticError) -> str:
         case GenericParserError():
             return f"En línea {error.line}, columna {error.column}: se encontró '{error.offending_text}', es un {Parser.symbolicNames[error.offending_symbol_type]}, mientras se reconocía {Parser.ruleNames[error.rule_idx]}, se esperaba uno de estos: {list(map(lambda i: Parser.symbolicNames[i], error.expected_tokens))}"
         case RepeticionError():
-            return f"RepeticionError"
+            return f"La repetición de la línea {error.line}, columna {error.column} no puede tener Llamadas, Repeticiones ni Ligaduras en su interior"
         case LigaduraError():
-            return f"LigaduraError"
+            return f"La ligadura de la línea {error.line}, columna {error.column} no puede tener Llamadas, Repeticiones ni Ligaduras en su interior"
 
         # Semantic errors
         case ModificadorArmaduraError():
