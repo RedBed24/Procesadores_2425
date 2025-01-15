@@ -13,7 +13,7 @@ public class AbcGenerator {
         abcBuilder.append("T:").append(obra.getNombre()).append("\n"); // Título
         abcBuilder.append("M:").append(parseCompas(obra.getCompas())).append("\n"); // Compás
         abcBuilder.append("K:").append(parseClave(obra.getClave(), obra.getArmadura())).append("\n"); // Clave y armadura
-        abcBuilder.append("L:1/4\n"); // Valor de referencia de la nota (negra)
+        abcBuilder.append("L:1/4"); // Valor de referencia de la nota (negra)
 
         // Procesar el cuerpo de la obra
         String cuerpo = procesarBloque(obra.getBloque_notas(), 
@@ -77,7 +77,7 @@ public class AbcGenerator {
                 // Manejo de FragmentoSemantico
                 if (fragmentoSemantico.getClave() != null || fragmentoSemantico.getCompas() != null) {
                     if (fragmentoSemantico.getClave() != null) {
-                        resultado.append("K:").append(parseClave(fragmentoSemantico.getClave(), fragmentoSemantico.getArmadura())).append("\n");
+                        resultado.append("\nK:").append(parseClave(fragmentoSemantico.getClave(), fragmentoSemantico.getArmadura())).append("\n");
                     }
                     if (fragmentoSemantico.getCompas() != null) {
                         resultado.append("M:").append(parseCompas(fragmentoSemantico.getCompas())).append("\n");
