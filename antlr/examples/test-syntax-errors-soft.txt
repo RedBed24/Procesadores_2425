@@ -8,5 +8,6 @@ fragmento test {
 "Título" {
     {
         test
+        |: lig { n(do do re) } :|
     }
 }
