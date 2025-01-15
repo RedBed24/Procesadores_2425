@@ -24,7 +24,10 @@ public class Main {
             // Parsear el archivo
             Symbol result = parser.parse();
             Obra obra = (Obra) result.value;
-
+            if (obra == null) {
+                System.out.println("No se ha generado la obra.");
+                System.exit(1);
+            }
             // Generar el archivo ABC
             String abcContent = AbcGenerator.generateAbc(obra);
             String outputFileName = inputFile.replace(".txt", ".abc");
