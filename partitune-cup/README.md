@@ -1,18 +1,30 @@
-# Partitune
+# Partitune Yacc
 
-Partitune makes music composition easy.
-Describe your song in a simple text format and translate it into an ABC notation file.
+## Requirements
+
+- Java 21
+- Maven 3.8.1
 
 ## Usage
 
-bash
+Aunque ya se incluye un ejecutable, también se puede compilar el proyecto con Maven.
+
+Usando el jar que se proporciona:
+```bash
+java -jar partitune-cup.jar input.txt
+```
+
+Con MAVEN, para compilar el proyecto:
+```bash
 mvn clean compile
-
 mvn clean package
-
+```
+Para ejecutar el proyecto compilado:
+```bash
 java -jar target/partitune-cup-0.0.0.jar input.txt
+```
 
-## Tests
+## Examples
 
 TEST-1: generacion es correcta
 TEST-2: Semantic error: En la ligadura no puede haber silencios 
