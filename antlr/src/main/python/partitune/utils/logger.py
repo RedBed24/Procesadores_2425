@@ -14,7 +14,7 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 # Handler para el archivo de log
-file_handler = logging.FileHandler("partitune.log")
+file_handler = logging.FileHandler("partitune.log", mode="w")
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)

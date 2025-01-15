@@ -1,16 +1,15 @@
 lexer grammar Scanner;
 
-@header {
-    from ..utils.logger import logger
-}
-
 options {
 	caseInsensitive = true;
 }
 
+channels {
+    ERROR_CHANNEL
+}
+
 COMPAS_DURACION: '2/4' | '3/4' | '4/4' | '6/8';
-COMPAS_DURATION_ERROR: [0-9]+ '/' [0-9]+ {logger.error("Duracion de compas no valida", self.line, self.column);
-};
+COMPAS_DURATION_ERROR: [0-9]+ '/' [0-9]+ -> channel(ERROR_CHANNEL);
 SOSTENIDO: '#';
 PUNTILLO: '.';
 OCTAVA: '\'' | '_';
@@ -34,10 +33,8 @@ LIGADURA: 'lig';
 ARMADURA: 'armadura';
 ID: [a-z]+; 
 TITULO: '"' (~["])* '"';
-TITULO_ERROR: '"' [.\n\r\t]* {logger.error("Titulo no cerrado", self.line, self.column);
-} -> skip;
+TITULO_ERROR: '"' [.\n\r\t]* -> channel(ERROR_CHANNEL);
 COMMENT: '/*' .*? '*/' -> skip;
-BAD_COMMENT: '/*' .*? {logger.error("Comentario sin cerrar", self.line, self.column);
-} -> skip;
+BAD_COMMENT: '/*' .*? -> channel(ERROR_CHANNEL);
 WS: [ \t\n\r]+ -> skip;
-
+UNKNOWN: . -> channel(ERROR_CHANNEL);

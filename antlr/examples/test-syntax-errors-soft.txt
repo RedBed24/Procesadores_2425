@@ -1,0 +1,13 @@
+fragmento test {
+    clane = 3/4
+    {
+        ligg { n(do dore) }
+    }
+}
+
+"Título" {
+    {
+        test
+        |: lig { n(do do re) } :|
+    }
+}

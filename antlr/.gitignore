@@ -1,3 +1,5 @@
 __pycache__/
 src/main/python/partitune/analysis/
 env/
+*.abc
+*.log

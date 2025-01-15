@@ -1,0 +1,28 @@
+fragmento simple { 
+   { 
+      n(fa) 
+   } 
+} 
+
+fragmento intro { 
+    armadura = b si
+    /* test */
+    compaS = 3/4 
+    { 
+        n(re mi_ %si)
+        Simple
+        lig { sc (fa' SOL' la') }
+        |: n (do' - Mi') c (fa' %sol') :|
+    } 
+} 
+
+/* creacion de la obra con nombre "Las Cuatro Estaciones" */ 
+obra "Las Cuatro Estaciones" { 
+      compas = 4/4
+      cLaVe = SOL
+    { 
+        n (do re mi) :|
+        intro 
+        f (do' re_ mi) sc (fa' sol la'.) 
+    } 
+}
