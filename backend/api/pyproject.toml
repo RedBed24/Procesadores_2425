@@ -1,0 +1,24 @@
+[project]
+name = "partitune-api"
+version = "0.0.1"
+authors = [
+  { name="Samuel Espejo Gil", email="samuel.espejo@alu.uclm.es" },
+  { name="Elena Ballesteros Morallón", email="elena.ballesteros2@alu.uclm.es" },
+  { name="Marcelo Chinarro Cabrero", email="marcelo.chinarro@alu.uclm.es" },
+  { name="Jorge Burgos Ortega", email="jorge.burgos1@alu.uclm.es" },
+]
+description = "Conversor Partitune a ABC"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "fastapi[standard]",
+  "Partitune"
+]
+
+[project.urls]
+"Repository" = "https://github.com/RedBed24/procesadores_2425"

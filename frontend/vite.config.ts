@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-     '/generate_abc': 'http://localhost:8000',
+     '/generateABC': 'http://localhost:8000',
     }
   }
 })

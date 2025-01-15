@@ -1,7 +1,8 @@
 import { Container, Textarea, Title, Button, Divider, Group, Stack, Skeleton, ActionIcon, Modal, Alert, Text } from '@mantine/core';
 import { useState } from 'react';
+import React from 'react';
 import { AbcPlayer } from '../components/abcPlayer';
-import { Download, Eraser, Paperclip, SendHorizontal, Ban } from 'lucide-react';
+import { Download, Eraser, Paperclip, SendHorizontal, Ban, TriangleAlert } from 'lucide-react';
 import { UploadFile } from '../components/upload-file';
 import Editor from '@monaco-editor/react';
 
@@ -12,6 +13,7 @@ export const EditorPartitune: React.FC = () => {
   const [abcMusic, setAbcMusic] = useState<string>(''); //abc text from backend
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [uploadModalOpened, setUploadModalOpened] = useState<boolean>(false);
+  const [warnings, setWarnings] = useState<string>('');
 
   const handleSubmit = async () => {
     setError(null);
@@ -23,19 +25,21 @@ export const EditorPartitune: React.FC = () => {
       const abcBlob = new Blob([musicText], { type: 'text/plain' });
       formData.append('file', abcBlob, 'music.abc');
 
-      const response = await fetch('/generate_abc', { //send to backend
+      const response = await fetch('/generateABC', { //send to backend
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.detail);
       }
       // get response as JSON
       const data = await response.json();
       const text = data.content;
-
+      const warnings = data.warnings;
       setAbcMusic(text);
+      setWarnings(warnings);
       setIsSubmitted(true);
 
     } catch (err: any) {
@@ -62,7 +66,7 @@ export const EditorPartitune: React.FC = () => {
 
   return (
     <>
-      <Container size='xl' fluid>
+      <Container size='xl' fluid >
         <Stack>
           <Text
             ta="center"
@@ -85,25 +89,25 @@ export const EditorPartitune: React.FC = () => {
             onChange={(event) => setMusicText(event.currentTarget.value)}
           /> */}
           <Text size='sm' mb={0}>Escribe aquí la música</Text>
-    <div style={{ marginTop:'0px' }}>
-      <Editor
-        height="300px" 
-        defaultLanguage="plaintext"
-        value={musicText}
-        onChange={(newValue) => setMusicText(newValue || "")}
-        options={{
-          minimap: { enabled: false },
-          lineNumbers: "on",
-          scrollBeyondLastLine: false, 
-          wordWrap: "on", 
-        }}
-      />
-    </div>
+          <div style={{ marginTop: '0px',  borderRadius: '5px', border: '1px solid #ced4da' }}>
+            <Editor
+              height="300px"
+              defaultLanguage="plaintext"
+              value={musicText}
+              onChange={(newValue) => setMusicText(newValue || "")}
+              options={{
+                minimap: { enabled: false },
+                lineNumbers: "on",
+                scrollBeyondLastLine: false,
+                wordWrap: "on",
+              }}
+            />
+          </div>
           <Group>
             <Button mt='xl' size='md' onClick={handleSubmit} rightSection={<SendHorizontal />}>
               Convertir
             </Button>
-            <Button mt='xl' size='md' onClick={() => { setMusicText(''); setIsSubmitted(false); }} rightSection={<Eraser />}>
+            <Button mt='xl' size='md' onClick={() => { setMusicText(''); setIsSubmitted(false); setError(''); setWarnings('')}} rightSection={<Eraser />}>
               Borrar
             </Button>
             <Button mt='xl' size='md' onClick={() => { setUploadModalOpened(true); }} rightSection={<Paperclip />}>
@@ -112,7 +116,30 @@ export const EditorPartitune: React.FC = () => {
           </Group>
         </Stack>
         {error &&
-          <Alert mt='sm' variant='filled' color='red' title='Error' radius='md' icon={<Ban />}>{error}</Alert>
+          <Alert mt='sm' variant='filled' color='red' radius='md' icon={<Ban />}>
+            {error.split('\n').map((line, index) => (
+            <React.Fragment key={index}>
+              {line}
+              {index < error.split('\n').length - 1 && <br />}
+            </React.Fragment>
+          ))}</Alert>
+        }
+        {warnings &&
+          <Alert
+            mt="sm"
+            variant="filled"
+            color="orange"
+            
+            radius="md"
+            icon={<TriangleAlert />}
+          >
+            {warnings.split('\n').map((line, index) => (
+              <React.Fragment key={index}>
+                {line}
+                {index < warnings.split('\n').length - 1 && <br />}
+              </React.Fragment>
+            ))}
+          </Alert>
         }
         <Divider my='xl' />
 
