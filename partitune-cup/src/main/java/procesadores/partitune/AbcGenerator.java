@@ -10,10 +10,10 @@ public class AbcGenerator {
         // Encabezado del archivo ABC
         StringBuilder abcBuilder = new StringBuilder();
         abcBuilder.append("X:1\n"); // Número de referencia
-        abcBuilder.append("T:").append(obra.getNombre()).append("\n"); // Título
-        abcBuilder.append("M:").append(parseCompas(obra.getCompas())).append("\n"); // Compás
-        abcBuilder.append("K:").append(parseClave(obra.getClave(), obra.getArmadura())).append("\n"); // Clave y armadura
-        abcBuilder.append("L:1/4\n"); // Valor de referencia de la nota (negra)
+        abcBuilder.append("T: ").append(obra.getNombre()).append("\n"); // Título
+        abcBuilder.append("M: ").append(parseCompas(obra.getCompas())).append("\n"); // Compás
+        abcBuilder.append("K: ").append(parseClave(obra.getClave(), obra.getArmadura())).append("\n"); // Clave y armadura
+        abcBuilder.append("L: 1/4\n"); // Valor de referencia de la nota (negra)
 
         // Procesar el cuerpo de la obra
         String cuerpo = procesarBloque(obra.getBloque_notas(), 
@@ -45,19 +45,18 @@ public class AbcGenerator {
 
     private static String parseClave(Clave clave, Armadura armadura) {
         StringBuilder claveStr = new StringBuilder();
-        switch (clave) {
-            case SOL -> claveStr.append("");
-            case FA -> claveStr.append("clef=bass");
-            case DO -> claveStr.append("clef=alto");
-        }
-
         if (armadura != null) {
             String[] notas = armadura.getTipo_modificacion() == ModificadorArmadura.BEMOL
                     ? new String[]{"F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"}
                     : new String[]{"G", "D", "A", "E", "B", "F#", "C#"};
             claveStr.append(" ").append(String.join(" ", Arrays.copyOf(notas, armadura.getCantidadModificadores())));
         } else {
-            claveStr.append(" C");
+            claveStr.append("C");
+        }
+        switch (clave) {
+            case SOL -> claveStr.append("");
+            case FA -> claveStr.append(" clef=bass");
+            case DO -> claveStr.append(" clef=alto");
         }
 
         return claveStr.toString();
@@ -75,6 +74,7 @@ public class AbcGenerator {
                 resultado.append(procesarLigadura((Ligadura) elemento)).append(" ");
             } else if (elemento instanceof FragmentoSemantico fragmentoSemantico) {
                 // Manejo de FragmentoSemantico
+                resultado.append("\n");
                 if (fragmentoSemantico.getClave() != null || fragmentoSemantico.getCompas() != null) {
                     if (fragmentoSemantico.getClave() != null) {
                         resultado.append("K:").append(parseClave(fragmentoSemantico.getClave(), fragmentoSemantico.getArmadura())).append("\n");
@@ -93,10 +93,10 @@ public class AbcGenerator {
     
                 if (fragmentoSemantico.getClave() != null || fragmentoSemantico.getCompas() != null) {
                     if (fragmentoSemantico.getClave() != null) {
-                        resultado.append("K:").append(parseClave(clave, armadura)).append("\n");
+                        resultado.append("K: ").append(parseClave(clave, armadura)).append("\n");
                     }
                     if (fragmentoSemantico.getCompas() != null) {
-                        resultado.append("M:").append(parseCompas(compas)).append("\n");
+                        resultado.append("M: ").append(parseCompas(compas)).append("\n");
                     }
                 }
             }
@@ -198,8 +198,8 @@ public class AbcGenerator {
         StringBuilder resultado = new StringBuilder();
 
         for (String linea : abcCuerpo.split("\\n")) {
-        
-            if (linea.startsWith("M:") || linea.startsWith("K:")) {
+            
+            if (linea.trim().startsWith("M:") || linea.trim().startsWith("K:")) {
                 resultado.append(linea).append("\n");
                 pulsosRestantes = pulsosTotales;
                 continue;
@@ -211,7 +211,6 @@ public class AbcGenerator {
                 if (elemento.isEmpty()) {
                     continue;
                 }
-
 
                 boolean esUltimoElemento = (i == elementos.length - 1);
 
