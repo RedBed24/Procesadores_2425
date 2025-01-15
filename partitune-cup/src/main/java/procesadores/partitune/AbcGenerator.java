@@ -197,11 +197,8 @@ public class AbcGenerator {
         float pulsosRestantes = pulsosTotales;
         StringBuilder resultado = new StringBuilder();
 
-        System.out.println("Pulsos totales: " + pulsosTotales);
-
         for (String linea : abcCuerpo.split("\\n")) {
-            System.out.println("Línea actual: " + linea);
-
+        
             if (linea.startsWith("M:") || linea.startsWith("K:")) {
                 resultado.append(linea).append("\n");
                 continue;
@@ -214,13 +211,11 @@ public class AbcGenerator {
                     continue;
                 }
 
-                System.out.println("Elemento actual: " + elemento);
 
                 boolean esUltimoElemento = (i == elementos.length - 1);
 
                 if (elemento.equals(":|") || elemento.equals("|:")) {
                     if (pulsosRestantes < pulsosTotales && !esUltimoElemento) {
-                        System.out.println("Rellenando antes de división especial con silencio. Pulsos restantes: " + pulsosRestantes);
                         resultado.append("z").append(valorSilencio(pulsosRestantes)).append(" ");
                     }
                     resultado.append(elemento).append(" ");
@@ -230,11 +225,9 @@ public class AbcGenerator {
 
                 if (esNotaOUnSilencio(elemento)) {
                     double duracionElemento = obtenerDuracion(elemento);
-                    System.out.println("Duración elemento: " + duracionElemento);
 
                     if (duracionElemento > pulsosRestantes) {
                         if (pulsosRestantes > 0) {
-                            System.out.println("Rellenando compás con silencio. Pulsos restantes: " + pulsosRestantes);
                             resultado.append("z").append(valorSilencio(pulsosRestantes)).append(" | ");
                         }
                         if (!esDivisionEspecialSiguiente(elementos, i)) {
@@ -247,7 +240,6 @@ public class AbcGenerator {
                         pulsosRestantes -= duracionElemento;
 
                         if (pulsosRestantes == 0 && !esDivisionEspecialSiguiente(elementos, i)) {
-                            System.out.println("Añadiendo línea divisoria. Pulsos restantes: " + pulsosRestantes);
                             resultado.append("| ");
                             pulsosRestantes = pulsosTotales;
                         }
@@ -255,12 +247,9 @@ public class AbcGenerator {
                 } else {
                     resultado.append(elemento).append(" ");
                 }
-
-                System.out.println("Pulsos restantes después de leer elemento: " + pulsosRestantes);
             }
 
             if (pulsosRestantes > 0 && !linea.trim().endsWith(":|")) {
-                System.out.println("Rellenando al final de la línea con silencio. Pulsos restantes: " + pulsosRestantes);
                 resultado.append("z").append(valorSilencio(pulsosRestantes)).append(" | ");
                 pulsosRestantes = pulsosTotales;
             }
@@ -268,7 +257,6 @@ public class AbcGenerator {
             resultado.append("\n");
         }
 
-        System.out.println("Resultado final: \n" + resultado.toString());
         return resultado.toString();
     }
 
@@ -282,7 +270,6 @@ public class AbcGenerator {
 
     private static String valorSilencio(double duracion) {
         if (duracion % 1 == 0) {
-            System.out.println("Duración del silencio (entero): " + duracion);
             return String.valueOf((int) duracion);
         } else {
             int numerador = (int) Math.round(duracion * 16);
@@ -291,7 +278,6 @@ public class AbcGenerator {
                 numerador /= 2;
                 denominador /= 2;
             }
-            System.out.println("Duración del silencio (fracción): " + numerador + "/" + denominador);
             return numerador + "/" + denominador;
         }
     }
@@ -299,14 +285,12 @@ public class AbcGenerator {
     private static boolean esNotaOUnSilencio(String elemento) {
         // Permite notas con paréntesis iniciales o finales
         boolean resultado = elemento.matches("\\(?[A-Ga-gz].*\\)?");
-        System.out.println("¿Es nota o silencio?: " + elemento + " -> " + resultado);
         return resultado;
     }
 
 
     private static double obtenerDuracion(String elemento) {
         String[] partes = elemento.split("[^0-9/]+");
-        System.out.println("Partes de duración: " + Arrays.toString(partes));
 
         // Buscar la primera parte no vacía que contenga un número o fracción
         for (String parte : partes) {
@@ -319,7 +303,6 @@ public class AbcGenerator {
                             double denominador = Double.parseDouble(fraccion[1]);
                             return numerador / denominador;
                         } catch (NumberFormatException e) {
-                            System.out.println("Error al parsear fracción: " + Arrays.toString(fraccion));
                             return 1.0;
                         }
                     }
@@ -327,7 +310,6 @@ public class AbcGenerator {
                 try {
                     return Double.parseDouble(parte);
                 } catch (NumberFormatException e) {
-                    System.out.println("Error al parsear número: " + parte);
                     return 1.0;
                 }
             }
@@ -345,7 +327,6 @@ public class AbcGenerator {
             case SEISPOROCHO -> 6;
             default -> throw new IllegalArgumentException("Compas no válido: " + compas);
         };
-        System.out.println("Pulsos por compás: " + compas + " -> " + resultado);
         return resultado;
     }
 }
