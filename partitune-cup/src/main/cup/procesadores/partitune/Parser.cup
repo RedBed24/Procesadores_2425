@@ -256,7 +256,7 @@ lista_secuencias ::= secuencia:s lista_secuencias:lista {: lista.add(0,s); RESUL
 
 ligadura::= LIGADURA LLAVE_IZQ:llave lista_secuencias:ls LLAVE_DER {:
 	boolean error = false;
-	if(ls.size() < 2) {
+	if(ls.size() == 1 && ls.get(0).getNotas().size() < 2 ) {
 		report_error(Errors.semanticGetError(Errors.SEMANTIC_TWO_ELEMENTS_IN_LIGATURE, llaveleft, llaveright));
 		error = true;
 	}
