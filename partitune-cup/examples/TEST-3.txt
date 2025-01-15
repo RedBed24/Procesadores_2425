@@ -1,0 +1,27 @@
+fragmento Intro {
+    clave = FA
+    compas = 3/4
+    {
+        n (FA MI FA SOL)
+        sc (SOL FA MI DO)
+    }
+}
+
+fragmento Cierre {
+    clave = FA
+    compas = 4/4
+    {
+        n (DO DO FA MI)
+        lig { n (LA SOL) sc (FA MI) }
+    }
+}
+
+obra "Suite Modular" {
+    clave = FA
+    compas = 6/8
+    {
+        Intro
+        |: n (LA LA SOL MI) :|
+        Cierre
+    }
+}

@@ -1,46 +1,44 @@
 package procesadores.partitune;
 
-import procesadores.partitune.Scanner;
+import procesadores.partitune.parser;
+import procesadores.partitune.partitune.Obra;
+import java_cup.runtime.*;
+import java.io.*;
+import java.nio.file.*;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+public class Main {
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println("Uso: java -jar partitune.jar <archivo_entrada>");
+            System.exit(1);
+        }
 
-class Main {
-      private static Reader AbrirLector(String args[]) 
-  {
-    Reader lector = null ;
-   
-    if ( args.length > 0 ) 
-    {
-       try
-       {
-          lector = new FileReader(args[0]) ;
-       }
-       catch( IOException exc )
-       {
-          System.err.println("imposible abrir archivo '"+args[0]+"'");
-          System.err.println("causa: "+exc.getMessage()) ;
-          System.exit(1) ;
-       }
- 
-       System.out.println("leyendo archivo '"+args[0]+"'");
+        String inputFile = args[0];
+
+        try (FileInputStream stream = new FileInputStream(inputFile);
+             Reader reader = new InputStreamReader(stream)) {
+
+            // Crear el parser
+            parser parser = new parser(new Scanner(reader));
+
+            // Parsear el archivo
+            Symbol result = parser.parse();
+            Obra obra = (Obra) result.value;
+            if (obra == null) {
+                System.out.println("No se ha generado la obra.");
+                System.exit(1);
+            }
+            // Generar el archivo ABC
+            String abcContent = AbcGenerator.generateAbc(obra);
+            String outputFileName = inputFile.replace(".txt", ".abc");
+            Files.writeString(Paths.get(outputFileName), abcContent);
+
+            System.out.println("Archivo ABC generado: " + outputFileName);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error durante el análisis");
+            System.exit(1);
+        }
     }
-    else 
-    {
-       lector = new InputStreamReader(System.in) ;  
-       System.out.println("leyendo entrada estándard (terminar con ctrl-d)");
-    }
-    
-    return lector ;
-  }
-
-  /***************************************************************************/
-
-  public static void main(String args[]) throws IOException 
-  {
-      Scanner analizador = new Scanner(AbrirLector(args)) ;
-      analizador.yylex();
-  }   
 }
