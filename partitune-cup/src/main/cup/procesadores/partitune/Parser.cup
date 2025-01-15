@@ -94,11 +94,13 @@ partitura::= lista_fragmentos:lf obra:obra
                     : elemento)
                 .collect(Collectors.toList()));
         }
+	if (obra.getBloque_notas() != null) {
 	obra.setBloque_notas(obra.getBloque_notas().stream()
             .map(elemento -> (elemento instanceof FragmentoLlamado)
                 ? dictFragmentos.get(((FragmentoLlamado) elemento).getNombre().toUpperCase())
                 : elemento)
             .collect(Collectors.toList()));
+	}
 	RESULT = obra;
 	if (errores.size() > 0)
 	 	RESULT = null;
@@ -133,8 +135,7 @@ obra::= OBRA TITULO:t LLAVE_IZQ lista_especificaciones:le bloque_notas:n LLAVE_D
 		}
 	}
 	RESULT = o;
-:}
-	| OBRA error {: RESULT = null; :};
+:};
 
 lista_especificaciones ::= lista_especificaciones:l especificacion:e  {:
 	if (e != null) {

@@ -19,7 +19,12 @@ public class Errors {
 
 
     private static final String[] PARSER_ERROR_MESSAGES = {
+        "Parser error: Bloque de elementos contiene elementos inesperados",
+        "Parser error: Bloque de notas vacio",
     };
+
+    public static final int PARSER_BLOCK = 0;
+    public static final int PARSER_EMPTY_BLOCK = 1;
 
     private static final String[] SEMANTIC_ERROR_MESSAGES = {
         "Semantic error: Armadura con mezcla de modificadores",
