@@ -27,9 +27,9 @@ from .utils.errors import *
 
 
 class Visitor(ParserVisitor):
-    def __init__(self):
+    def __init__(self, errores_anteriores: list[LexerError] = None):
         super().__init__()
-        self.errors: list[SemanticError] = []
+        self.errors: list[SemanticError | LexerError | ParserError] = errores_anteriores or []
         self.warnings: list[Warning] = []
 
     def _obtener_especificacion(
@@ -142,28 +142,31 @@ class Visitor(ParserVisitor):
             )
 
     def visitPartitura(self, ctx: Parser.PartituraContext) -> ObraFinal:
-        fragmentos: list[FragmentoSemantico] = list(
-            map(lambda fragmento: self.visitFragmento(fragmento), ctx.fragmento())
-        )
+        try:
+            fragmentos: list[FragmentoSemantico] = list(
+                map(lambda fragmento: self.visitFragmento(fragmento), ctx.fragmento())
+            )
 
-        obra: ObraSemantica = self.visitObra(ctx.obra())
+            obra: ObraSemantica = self.visitObra(ctx.obra())
 
-        for i, fragmento in enumerate(fragmentos):
-            for otro_fragmento in fragmentos[i + 1 :]:
-                if fragmento == otro_fragmento:
-                    self.errors.append(
-                        FragmentoDuplicationError(
-                            otro_fragmento.linea,
-                            otro_fragmento.columna,
-                            fragmento.nombre,
+            for i, fragmento in enumerate(fragmentos):
+                for otro_fragmento in fragmentos[i + 1 :]:
+                    if fragmento == otro_fragmento:
+                        self.errors.append(
+                            FragmentoDuplicationError(
+                                otro_fragmento.linea,
+                                otro_fragmento.columna,
+                                fragmento.nombre,
+                            )
                         )
-                    )
 
-        dict_fragmentos: dict[str, FragmentoSemantico] = {
-            fragmento.nombre.upper(): fragmento for fragmento in fragmentos
-        }
+            dict_fragmentos: dict[str, FragmentoSemantico] = {
+                fragmento.nombre.upper(): fragmento for fragmento in fragmentos
+            }
 
-        self._check_call_graph(dict_fragmentos, obra)
+            self._check_call_graph(dict_fragmentos, obra)
+        except AttributeError as e:
+            raise PartituneError(self.errors, self.warnings) from e
 
         if self.errors:
             raise PartituneError(self.errors, self.warnings)
