@@ -1,3 +1,4 @@
+from antlr4 import ParserRuleContext
 from ..partitune.nota_base import NotaBase
 
 
@@ -48,16 +49,37 @@ class CaracterNoReconocidoError(LexerError):
         self.caracter = caracter
 
 class ParserError(Exception):
-    def __init__(self, line: int, column: int):
+    def __init__(self, line: int, column: int, context: ParserRuleContext):
         self.line = line
         self.column = column
+        self.context = context
+
+class GenericParserError(ParserError):
+    def __init__(self, line: int, column: int, rule_idx: int, offending_symbol_type: int, offending_text: str, expected_tokens: list[int], context: ParserRuleContext):
+        super().__init__(line, column, context)
+        self.offending_text = offending_text
+        self.expected_tokens = expected_tokens
+        self.rule_idx = rule_idx
+        self.offending_symbol_type = offending_symbol_type
+
+class ElementoDentroElementoError(ParserError):
+    def __init__(self, line: int, column: int, end_line: int, end_column: int, context: ParserRuleContext):
+        super().__init__(line, column, context)
+        self.end_line = end_line
+        self.end_column = end_column
+
+class RepeticionError(ElementoDentroElementoError):
+    pass
+
+class LigaduraError(ElementoDentroElementoError):
+    pass
 
 class SemanticError(Exception):
     def __init__(self, line: int, column: int):
         self.line = line
         self.column = column
 
-class PartituneError(SemanticError):
+class PartituneError(Exception):
     def __init__(self, lista_errores: list[SemanticError], lista_warnings: list[Warning]):
         self.lista_errores = lista_errores
         self.lista_warnings = lista_warnings

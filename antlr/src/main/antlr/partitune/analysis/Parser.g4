@@ -5,18 +5,23 @@ options {
 }
 
 partitura: fragmento* obra EOF;
-obra: OBRA TITULO LLAVE_IZQ especificacion* bloque_notas LLAVE_DER;
+obra: OBRA TITULO LLAVE_IZQ especificacion* bloque_notas LLAVE_DER | error_obra;
+error_obra: ID? TITULO LLAVE_IZQ especificacion* bloque_notas LLAVE_DER;
 
-especificacion: clave | compas | armadura;
+especificacion: clave | compas | armadura | error_especificacion;
+error_especificacion: ID IGUAL;
 clave: CLAVE IGUAL NOTA_BASE;
 compas: COMPAS IGUAL COMPAS_DURACION;
 armadura: ARMADURA IGUAL nota_armadura+;
 nota_armadura: (BEMOL | SOSTENIDO) NOTA_BASE;
-fragmento: FRAGMENTO ID LLAVE_IZQ especificacion* bloque_notas LLAVE_DER;
+fragmento: FRAGMENTO ID LLAVE_IZQ especificacion* bloque_notas LLAVE_DER | error_fragmento;
+error_fragmento: ID? ID LLAVE_IZQ especificacion* bloque_notas LLAVE_DER;
 bloque_notas: LLAVE_IZQ elemento+ LLAVE_DER;
 elemento: repeticion | secuencia | ligadura | llamada;
-repeticion: PRINCIPIO_REP? secuencia+ FINAL_REP;
-ligadura: LIGADURA LLAVE_IZQ secuencia+ LLAVE_DER;
+repeticion: PRINCIPIO_REP? secuencia+ FINAL_REP | error_repeticion;
+error_repeticion: PRINCIPIO_REP elemento+ FINAL_REP;
+ligadura: LIGADURA LLAVE_IZQ secuencia+ LLAVE_DER | error_lidadura;
+error_lidadura: ID? LLAVE_IZQ secuencia+ LLAVE_DER #error_id_ligadura | LIGADURA LLAVE_IZQ elemento+ LLAVE_DER #error_secuencia_ligadura;
 llamada: ID;
 secuencia: DURACION PARENTESIS_IZQ (posibles_notas)+ PARENTESIS_DER;
 posibles_notas: nota | SILENCIO;

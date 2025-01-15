@@ -1,4 +1,5 @@
 from .errors import *
+from ..analysis.Parser import Parser
 
 
 def get_str_from_warning(warning: Warning) -> str:
@@ -25,6 +26,12 @@ def get_str_from_error(error: LexerError | ParserError | SemanticError) -> str:
         case CaracterNoReconocidoError():
             return f"Caracter no reconocido en línea {error.line}, columna {error.column}: {error.caracter}"
         # Parser errors
+        case GenericParserError():
+            return f"En línea {error.line}, columna {error.column}: se encontró '{error.offending_text}', es un {Parser.symbolicNames[error.offending_symbol_type]}, mientras se reconocía {Parser.ruleNames[error.rule_idx]}, se esperaba uno de estos: {list(map(lambda i: Parser.symbolicNames[i], error.expected_tokens))}"
+        case RepeticionError():
+            return f"RepeticionError"
+        case LigaduraError():
+            return f"LigaduraError"
 
         # Semantic errors
         case ModificadorArmaduraError():

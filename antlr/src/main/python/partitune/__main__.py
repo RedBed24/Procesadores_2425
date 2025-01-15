@@ -10,7 +10,7 @@ from .generacion import generar_abc
 
 
 from .utils.logger import logger
-from .utils.logger_error_listener import LoggerErrorListener
+from partitune.utils.parser_error_listener import ParserErrorListener
 from .utils.errors import PartituneError, TituloError, DuracionCompasError, ComentarioError, CaracterNoReconocidoError
 from .utils.error_messages import get_str_from_warning, get_str_from_error
 
@@ -66,11 +66,12 @@ def generate_abc(input_file):
     tokens = CommonTokenStream(lexer)
     parser = Parser(tokens)
     parser.removeErrorListeners()
-    parser.addErrorListener(LoggerErrorListener())
+    parser_error_listener = ParserErrorListener()
+    parser.addErrorListener(parser_error_listener)
     visitor = Visitor()
 
     tokens.fill()
-    errores_lexicos = []
+    errores_lexicos = scanner_error_listener.errors
     for token in filter(lambda token: token.channel == Scanner.ERROR_CHANNEL, tokens.tokens):
         match token.type:
             case Scanner.TITULO_ERROR:
@@ -88,12 +89,12 @@ def generate_abc(input_file):
 
         obra = visitor.visit(parse_tree)
 
-        if errores_lexicos:
-            raise PartituneError(errores_lexicos, obra.warnings)
+        if errores_lexicos or parser_error_listener.errors:
+            raise PartituneError(errores_lexicos + parser_error_listener.errors, visitor.warnings)
 
         if visitor.warnings:
             for warning in visitor.warnings:
-                logger.warning(get_str_from_warning(visitor.warning))
+                logger.warning(get_str_from_warning(warning))
 
         abc_output = generar_abc(obra)
 
@@ -104,6 +105,10 @@ def generate_abc(input_file):
         logger.info(f"Archivo ABC generado: {output_file}")
 
     except PartituneError as e:
+        for error in errores_lexicos:
+            logger.error(get_str_from_error(error))
+        for error in parser_error_listener.errors:
+            logger.error(get_str_from_error(error))
         for error in e.lista_errores:
             logger.error(get_str_from_error(error))
         for warning in e.lista_warnings:
