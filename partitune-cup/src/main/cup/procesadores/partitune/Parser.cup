@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.HashSet;
 import procesadores.partitune.utils.Errors;
 
 parser code {:
@@ -104,13 +106,39 @@ partitura::= lista_fragmentos:lf obra:obra
                 : elemento)
             .collect(Collectors.toList()));
 	}
+	// fragmentos no usados
+	Set<String> usados = new HashSet<>();
+
+	for (FragmentoSemantico fragmento : dictFragmentos.values()) {
+		for (Object secuencia : fragmento.getSecuencias()) {
+			if (secuencia instanceof FragmentoLlamado) {
+				usados.add(((FragmentoLlamado) secuencia).getNombre().toUpperCase());
+			}
+		}
+	}
+
+	if (obra.getBloque_notas() != null) {
+		for (Object elemento : obra.getBloque_notas()) {
+			if (elemento instanceof FragmentoLlamado) {
+				usados.add(((FragmentoLlamado) elemento).getNombre().toUpperCase());
+			}
+		}
+	}
+
+	for (String nombre : dictFragmentos.keySet()) {
+		if (!usados.contains(nombre)) {
+			int linea = dictFragmentos.get(nombre).getLinea();
+			int columna = dictFragmentos.get(nombre).getColumna();
+			report_warning(Errors.warningGetError(Errors.WARNING_FRAGMENT_NOT_USED, linea, columna));
+		}
+	}
 	RESULT = obra;
 	if (errores.size() > 0)
 	 	RESULT = null;
 	}
 :};
 
-lista_fragmentos::= fragmento:f lista_fragmentos:lista {:lista.add(f); RESULT = lista; :} 
+lista_fragmentos::= fragmento:f lista_fragmentos:lista {:lista.add(0,f); RESULT = lista; :} 
 				| {: List<FragmentoSemantico> lista = new LinkedList<>(); RESULT = lista; :};
 
 obra::= OBRA TITULO:t LLAVE_IZQ lista_especificaciones:le bloque_notas:n LLAVE_DER {:
@@ -211,10 +239,8 @@ bemol_sostenido::= BEMOL:b {:RESULT = ModificadorArmadura.getModificadorType(b);
 				| SOSTENIDO:s {: RESULT = ModificadorArmadura.getModificadorType(s); :} ;
 
 fragmento::= FRAGMENTO ID:id LLAVE_IZQ lista_especificaciones:le bloque_notas:bn LLAVE_DER {:
-    // Crear el fragmento usando el constructor por defecto
     FragmentoSemantico f = new FragmentoSemantico();
     
-    // Asignar el nombre del fragmento (suponiendo que exista un setter o campo público)
     f.setNombre(id);
     //  (clave, compás, armadura) REVISAR ESO
     for (Object especificacion : le) {
@@ -222,10 +248,9 @@ fragmento::= FRAGMENTO ID:id LLAVE_IZQ lista_especificaciones:le bloque_notas:bn
         else if (especificacion instanceof Compas) f.setCompas((Compas) especificacion);
         else if (especificacion instanceof Armadura) f.setArmadura((Armadura) especificacion);
     }
-    // Asignar las secuencias obtenidas del bloque de notas
     f.setSecuencias(bn);  
-    
-    
+	f.setLinea(idleft);
+	f.setColumna(idright);
     
     RESULT = f; 
 :};

@@ -4,6 +4,11 @@ fragmento noUsado {
     }
 }
 
+fragmento noUsado2 {
+    {
+        n (do re)
+    }
+}
 obra "Warnings" {
     compas = 4/4
     compas = 3/4

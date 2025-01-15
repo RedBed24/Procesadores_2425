@@ -40,6 +40,7 @@ public class Errors {
         "Warning: Compas duplicado",
         "Warning: Clave duplicada",
         "Warning: Armadura duplicada",
+        "Warning: Fragmento no utilizado",
     };
 
     public static final int SEMANTIC_MIXED_MODIFIERS = 0;
@@ -53,6 +54,7 @@ public class Errors {
     public static final int WARNING_DUPLICATE_COMPAS = 0;
     public static final int WARNING_DUPLICATE_KEY = 1;
     public static final int WARNING_DUPLICATE_ARMOR = 2;
+    public static final int WARNING_FRAGMENT_NOT_USED = 3;
 
     private static String checkError(String[] messages, int codigo, int linea, int columna) {
         if (codigo >= 0 && codigo < messages.length) {
