@@ -1,0 +1,3 @@
+;      /* token no definido */
+1/4    /* compas erróneo */
+/*        comentario sin cerrar

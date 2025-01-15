@@ -85,7 +85,10 @@ partitura::= lista_fragmentos:lf obra:obra
 		}
 	}
 	
-	dictFragmentos = lf.stream().collect(Collectors.toMap(f -> f.getNombre().toUpperCase(), f -> f));
+	dictFragmentos = lf.stream().collect(Collectors.toMap(
+    f -> f.getNombre().toUpperCase(),
+    f -> f,
+    (existing, replacement) -> replacement));
 
  	for (FragmentoSemantico fragmento : dictFragmentos.values()) {
             fragmento.setSecuencias(fragmento.getSecuencias().stream()
