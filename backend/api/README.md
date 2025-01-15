@@ -1,6 +1,6 @@
 # API
 
-Documentacuón de la API de la aplicación.
+Documentación de la API de la aplicación.
 
 ## Endpoints
 
@@ -10,8 +10,7 @@ Devuelve un mensaje de confirmación de que el servidor está activo.
 
 ### POST /generateABC
 
-El endpoint /generate_abc recibe un archivo en formato partitune, llama al compilador de partitune y devuelve el archivo en formato abc o un mensajde de error si no se pudo generar el archivo.
-
+El endpoint /generateABC recibe un archivo en formato partitune, llama al procesador de partitune y devuelve el archivo en formato abc o un mensajde de error si no se pudo generar el archivo.
 
 Input:
 - file: archivo en formato partitune
@@ -41,6 +40,23 @@ Output, respuesta fallida:
 ```
 
 ## Ejectuar la aplicación
+
+Instalar las dependencias necesarias:
+
+1. Instalar el paquete de `Partitune`:  
+En la carpeta de `antlr` ejecutar el siguiente comando:
+```bash
+pip install .
+```
+
+2. Instalar las dependencias de la API:
+```bash
+pip install fastapi[standard]
+```
+
+3. Ejecutar el servidor:
+
+Desde la carpeta `api` ejecutar el siguiente comando para iniciar el servidor:
 
 En desarrollo:
 ```bash
