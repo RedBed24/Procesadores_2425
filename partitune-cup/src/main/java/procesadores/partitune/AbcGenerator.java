@@ -77,10 +77,10 @@ public class AbcGenerator {
                 // Manejo de FragmentoSemantico
                 if (fragmentoSemantico.getClave() != null || fragmentoSemantico.getCompas() != null) {
                     if (fragmentoSemantico.getClave() != null) {
-                        resultado.append("\nK:").append(parseClave(fragmentoSemantico.getClave(), fragmentoSemantico.getArmadura())).append("\n");
+                        resultado.append("K:").append(parseClave(fragmentoSemantico.getClave(), fragmentoSemantico.getArmadura())).append("\n");
                     }
                     if (fragmentoSemantico.getCompas() != null) {
-                        resultado.append("\nM:").append(parseCompas(fragmentoSemantico.getCompas())).append("\n");
+                        resultado.append("M:").append(parseCompas(fragmentoSemantico.getCompas())).append("\n");
                     }
                 }
     
@@ -99,48 +99,13 @@ public class AbcGenerator {
                         resultado.append("M:").append(parseCompas(compas)).append("\n");
                     }
                 }
-            } else if (elemento instanceof Fragmento fragmento) {
-                List<String> cambios = new ArrayList<>();
-                Clave nuevaClave = clave;
-                Compas nuevoCompas = compas;
-                Armadura nuevaArmadura = armadura;
-    
-                // Aplicar cambios de clave si están definidos en el fragmento
-                if (fragmento.getClave() != null) {
-                    nuevaClave = fragmento.getClave();
-                    nuevaArmadura = fragmento.getArmadura();
-                    cambios.add("K:" + parseClave(fragmento.getClave(), fragmento.getArmadura()) + "\n");
-                }
-                // Aplicar cambios de compás si están definidos en el fragmento
-                if (fragmento.getCompas() != null) {
-                    nuevoCompas = fragmento.getCompas();
-                    cambios.add("M:" + parseCompas(fragmento.getCompas()) + "\n");
-                }
-    
-                // Añadir los cambios contextuales
-                for (String cambio : cambios) {
-                    resultado.append(cambio);
-                }
-    
-                // Dado que Fragmento no contiene un bloque de notas interno,
-                // omitimos la llamada recursiva para procesar contenido.
-    
-                // Revertir cambios al finalizar el fragmento
-                List<String> reversiones = new ArrayList<>();
-                if (fragmento.getClave() != null) {
-                    reversiones.add("K:" + parseClave(clave, armadura) + "\n");
-                }
-                if (fragmento.getCompas() != null) {
-                    reversiones.add("M:" + parseCompas(compas) + "\n");
-                }
-                for (String rev : reversiones) {
-                    resultado.append(rev);
-                }
             }
+           
         }
     
         return resultado.toString();
     }
+    
     
     
 
@@ -155,6 +120,7 @@ public class AbcGenerator {
                 })
                 .collect(Collectors.joining(" "));
     }
+    
 
     private static String procesarRepeticion(Repeticion repeticion) {
         String cuerpo = repeticion.getSecuencias().stream()
@@ -169,10 +135,12 @@ public class AbcGenerator {
     }
 
     private static String procesarLigadura(Ligadura ligadura) {
-        return ligadura.getSecuencias().stream()
-                .map(secuencia -> "(" + procesarSecuencia(secuencia) + ")")
-                .collect(Collectors.joining(" "));
+        return "(" + ligadura.getSecuencias().stream()
+                .map(AbcGenerator::procesarSecuencia)
+                .collect(Collectors.joining(" ")) + ")";
     }
+    
+    
 
     private static String procesarNota(Nota nota) {
         Map<NotaBase, String> notaBaseMap = Map.of(

@@ -1,0 +1,14 @@
+obra "Cumpleaños Feliz" {
+    compas = 3/4
+    clave = DO
+    {
+        n (SOL SOL LA SOL)
+        n (DO SI -)
+        n (SOL SOL LA SOL)
+        n (RE DO -)
+        n (SOL SOL SOL MI)
+        n (DO SI LA -)
+        n (FA FA MI DO)
+        n (RE DO -)
+    }
+}
