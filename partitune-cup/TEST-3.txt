@@ -1,4 +1,4 @@
-fragmento "Intro" {
+fragmento Intro {
     clave = FA
     compas = 6/8
     {
@@ -7,7 +7,7 @@ fragmento "Intro" {
     }
 }
 
-fragmento "Cierre" {
+fragmento Cierre {
     clave = FA
     compas = 6/8
     {

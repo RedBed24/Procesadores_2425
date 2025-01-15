@@ -170,18 +170,27 @@ posible_octava::= OCTAVA:o {: RESULT = o; :}
 bemol_sostenido::= BEMOL:b {:RESULT = ModificadorArmadura.getModificadorType(b); :} 
 				| SOSTENIDO:s {: RESULT = ModificadorArmadura.getModificadorType(s); :} ;
 
-fragmento::= FRAGMENTO ID:id LLAVE_IZQ lista_especificaciones:le bloque_notas:bn LLAVE_DER {: 
-	FragmentoSemantico f = new FragmentoSemantico(bn, idleft, idright);
-	Clave cl;
-	Compas c;
-	Armadura a;
-	for (Object especificacion : le) {
-		if(especificacion instanceof Clave) cl = (Clave) especificacion;
-		else if(especificacion instanceof Compas) c = (Compas) especificacion;
-		else if(especificacion instanceof Armadura) a = (Armadura) especificacion;
-	}
-	RESULT = f; 
+fragmento::= FRAGMENTO ID:id LLAVE_IZQ lista_especificaciones:le bloque_notas:bn LLAVE_DER {:
+    // Crear el fragmento usando el constructor por defecto
+    FragmentoSemantico f = new FragmentoSemantico();
+    
+    // Asignar el nombre del fragmento (suponiendo que exista un setter o campo público)
+    f.setNombre(id);
+    //  (clave, compás, armadura) REVISAR ESO
+    for (Object especificacion : le) {
+        if (especificacion instanceof Clave) f.setClave((Clave) especificacion);
+        else if (especificacion instanceof Compas) f.setCompas((Compas) especificacion);
+        else if (especificacion instanceof Armadura) f.setArmadura((Armadura) especificacion);
+    }
+    // Asignar las secuencias obtenidas del bloque de notas
+    f.setSecuencias(bn);  
+    
+    
+    
+    RESULT = f; 
 :};
+
+
 
 bloque_notas::= LLAVE_IZQ lista_elementos:le LLAVE_DER {: RESULT = le; :};
 

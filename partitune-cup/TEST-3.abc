@@ -1,0 +1,15 @@
+X:1
+T:"Suite Modular"
+M:6/8
+K:clef=bass C
+L:1/4
+K:clef=bass C
+M:6/8
+G1 F1 E1 F1 C1/4 E1/4 F1/4 G1/4 
+K:clef=bass C
+M:6/8
+|: E1 | G1 A1 A1 :| K:clef=bass C 
+M:6/8
+E1 F1 | C1 C1 (G1 A1) (E1/4 F1/4) 
+K:clef=bass C
+M:6/8
