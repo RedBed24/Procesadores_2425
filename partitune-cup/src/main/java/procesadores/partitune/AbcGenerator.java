@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 
 public class AbcGenerator {
 
+    // Método principal para generar el archivo ABC a partir de una obra
     public static String generateAbc(Obra obra) {
-        // Encabezado del archivo ABC
         StringBuilder abcBuilder = new StringBuilder();
         abcBuilder.append("X:1\n"); // Número de referencia
         abcBuilder.append("T: ").append(obra.getNombre()).append("\n"); // Título
@@ -28,6 +28,7 @@ public class AbcGenerator {
         return abcBuilder.toString();
     }
 
+    // Método para convertir el compás a formato ABC
     private static String parseCompas(Compas compas) {
         switch (compas) {
             case DOSPORCUATRO:
@@ -43,16 +44,20 @@ public class AbcGenerator {
         }
     }
 
+    // Método para convertir la clave y armadura a formato ABC
     private static String parseClave(Clave clave, Armadura armadura) {
         StringBuilder claveStr = new StringBuilder();
         if (armadura != null) {
+            // Seleccionar las notas según el tipo de modificación (bemol o sostenido)
             String[] notas = armadura.getTipo_modificacion() == ModificadorArmadura.BEMOL
                     ? new String[]{"F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"}
                     : new String[]{"G", "D", "A", "E", "B", "F#", "C#"};
+            // Añadir las notas de la armadura al string de clave
             claveStr.append(" ").append(String.join(" ", Arrays.copyOf(notas, armadura.getCantidadModificadores())));
         } else {
-            claveStr.append("C");
+            claveStr.append("C"); // Si no hay armadura, usar la clave de Do
         }
+        // Añadir la clave específica (sol, fa, do)
         switch (clave) {
             case SOL -> claveStr.append("");
             case FA -> claveStr.append(" clef=bass");
@@ -62,6 +67,7 @@ public class AbcGenerator {
         return claveStr.toString();
     }
 
+    // Método para procesar un bloque de notas y convertirlo a formato ABC
     private static String procesarBloque(List<Object> bloqueNotas, Clave clave, Compas compas, Armadura armadura) {
         StringBuilder resultado = new StringBuilder();
     
@@ -84,6 +90,7 @@ public class AbcGenerator {
                     }
                 }
     
+                // Procesar el bloque de notas del fragmento semántico recursivamente
                 resultado.append(procesarBloque(
                     fragmentoSemantico.getSecuencias(),
                     fragmentoSemantico.getClave() != null ? fragmentoSemantico.getClave() : clave,
@@ -91,6 +98,7 @@ public class AbcGenerator {
                     fragmentoSemantico.getArmadura() != null ? fragmentoSemantico.getArmadura() : armadura
                 )).append("\n");
     
+                // Restaurar la clave y el compás originales si fueron cambiados
                 if (fragmentoSemantico.getClave() != null || fragmentoSemantico.getCompas() != null) {
                     if (fragmentoSemantico.getClave() != null) {
                         resultado.append("K: ").append(parseClave(clave, armadura)).append("\n");
@@ -100,48 +108,45 @@ public class AbcGenerator {
                     }
                 }
             }
-           
         }
     
         return resultado.toString();
     }
-    
-    
-    
 
+    // Método para procesar una secuencia de notas
     private static String procesarSecuencia(Secuencia secuencia) {
         return secuencia.getNotas().stream()
                 .map(nota -> {
                     if (nota == null) {
-                        return "z" + duracionToAbc(null, secuencia.getDuracion());
+                        return "z" + duracionToAbc(null, secuencia.getDuracion()); // Silencio
                     } else {
                         return procesarNota(nota) + duracionToAbc(nota, secuencia.getDuracion());
                     }
                 })
                 .collect(Collectors.joining(" "));
     }
-    
 
+    // Método para procesar una repetición de secuencias
     private static String procesarRepeticion(Repeticion repeticion) {
         String cuerpo = repeticion.getSecuencias().stream()
                 .map(AbcGenerator::procesarSecuencia)
                 .collect(Collectors.joining(" "));
 
         if (repeticion.getTipo_repeticion() == TipoRepeticion.CON_INICIO) {
-            return "|: " + cuerpo + " :|";
+            return "|: " + cuerpo + " :|"; // Repetición con inicio
         } else {
-            return cuerpo + " :|";
+            return cuerpo + " :|"; // Repetición sin inicio
         }
     }
 
+    // Método para procesar una ligadura de secuencias
     private static String procesarLigadura(Ligadura ligadura) {
         return "(" + ligadura.getSecuencias().stream()
                 .map(AbcGenerator::procesarSecuencia)
                 .collect(Collectors.joining(" ")) + ")";
     }
-    
-    
 
+    // Método para procesar una nota individual
     private static String procesarNota(Nota nota) {
         Map<NotaBase, String> notaBaseMap = Map.of(
                 NotaBase.DO, "C",
@@ -155,9 +160,9 @@ public class AbcGenerator {
 
         String base = notaBaseMap.getOrDefault(nota.getNota_base(), "C");
         if (nota.getOctava() == Octava.AGUDO) {
-            base = base.toLowerCase();
+            base = base.toLowerCase(); // Notas en octava aguda se representan en minúsculas
         } else if (nota.getOctava() == Octava.GRAVE) {
-            base += ",";
+            base += ","; // Notas en octava grave se representan con una coma
         }
 
         Map<Modificador, String> modMap = Map.of(
@@ -169,6 +174,7 @@ public class AbcGenerator {
         return modificador + base;
     }
 
+    // Método para convertir la duración de una nota a formato ABC
     private static String duracionToAbc(Nota nota, Duracion duracion) {
         Map<Duracion, String> duracionMap = nota != null && nota.isPuntillo()
                 ? Map.of(
@@ -192,19 +198,22 @@ public class AbcGenerator {
         return duracionMap.getOrDefault(duracion, "");
     }
 
-    private static String generarLineasDivisorias(String abcCuerpo, Compas compas) {
-        float pulsosTotales = obtenerPulsosPorCompas(compas);
-        float pulsosRestantes = pulsosTotales;
+        private static String generarLineasDivisorias(String abcCuerpo, Compas compas) {
+        float pulsosTotales = obtenerPulsosPorCompas(compas); // Obtener el número total de pulsos por compás
+        float pulsosRestantes = pulsosTotales; // Inicializar los pulsos restantes con el total de pulsos
         StringBuilder resultado = new StringBuilder();
 
+        // Dividir el cuerpo del ABC en líneas
         for (String linea : abcCuerpo.split("\\n")) {
             
+            // Si la línea contiene un cambio de compás o clave, reiniciar los pulsos restantes
             if (linea.trim().startsWith("M:") || linea.trim().startsWith("K:")) {
                 resultado.append(linea).append("\n");
                 pulsosRestantes = pulsosTotales;
                 continue;
             }
 
+            // Dividir la línea en elementos individuales
             String[] elementos = linea.split(" ");
             for (int i = 0; i < elementos.length; i++) {
                 String elemento = elementos[i];
@@ -214,6 +223,7 @@ public class AbcGenerator {
 
                 boolean esUltimoElemento = (i == elementos.length - 1);
 
+                // Manejar repeticiones
                 if (elemento.equals(":|") || elemento.equals("|:")) {
                     if (pulsosRestantes < pulsosTotales && !esUltimoElemento) {
                         resultado.append("z").append(valorSilencio(pulsosRestantes)).append(" ");
@@ -223,9 +233,11 @@ public class AbcGenerator {
                     continue;
                 }
 
+                // Verificar si el elemento es una nota o un silencio
                 if (esNotaOUnSilencio(elemento)) {
                     double duracionElemento = obtenerDuracion(elemento);
 
+                    // Si la duración del elemento excede los pulsos restantes en el compás
                     if (duracionElemento > pulsosRestantes) {
                         if (pulsosRestantes > 0) {
                             resultado.append("z").append(valorSilencio(pulsosRestantes)).append(" | ");
@@ -239,6 +251,7 @@ public class AbcGenerator {
                         resultado.append(elemento).append(" ");
                         pulsosRestantes -= duracionElemento;
 
+                        // Si los pulsos restantes son cero, añadir una barra divisoria
                         if (pulsosRestantes == 0 && !esDivisionEspecialSiguiente(elementos, i)) {
                             resultado.append("| ");
                             pulsosRestantes = pulsosTotales;
@@ -249,6 +262,7 @@ public class AbcGenerator {
                 }
             }
 
+            // Añadir un silencio para completar el compás si es necesario
             if (pulsosRestantes > 0 && !linea.trim().endsWith(":|")) {
                 resultado.append("z").append(valorSilencio(pulsosRestantes)).append(" | ");
                 pulsosRestantes = pulsosTotales;
@@ -260,6 +274,7 @@ public class AbcGenerator {
         return resultado.toString();
     }
 
+    // Método para verificar si el siguiente elemento es una división especial
     private static boolean esDivisionEspecialSiguiente(String[] elementos, int indiceActual) {
         if (indiceActual + 1 < elementos.length) {
             String siguiente = elementos[indiceActual + 1];
@@ -268,6 +283,7 @@ public class AbcGenerator {
         return false;
     }
 
+    // Método para obtener el valor de silencio en formato ABC
     private static String valorSilencio(double duracion) {
         if (duracion % 1 == 0) {
             return String.valueOf((int) duracion);
@@ -282,17 +298,15 @@ public class AbcGenerator {
         }
     }
 
+    // Método para verificar si un elemento es una nota o un silencio
     private static boolean esNotaOUnSilencio(String elemento) {
-        // Permite notas con paréntesis iniciales o finales
-        boolean resultado = elemento.matches("\\(?[A-Ga-gz].*\\)?");
-        return resultado;
+        return elemento.matches("\\(?[A-Ga-gz].*\\)?");
     }
 
-
+    // Método para obtener la duración de un elemento en formato ABC
     private static double obtenerDuracion(String elemento) {
         String[] partes = elemento.split("[^0-9/]+");
 
-        // Buscar la primera parte no vacía que contenga un número o fracción
         for (String parte : partes) {
             if (!parte.isEmpty()) {
                 if (parte.contains("/")) {
@@ -314,19 +328,17 @@ public class AbcGenerator {
                 }
             }
         }
-        // Si no se encuentra una parte válida, devolver 1.0 como predeterminado
         return 1.0;
     }
 
-
+    // Método para obtener los pulsos por compás
     private static int obtenerPulsosPorCompas(Compas compas) {
-        int resultado = switch (compas) {
+        return switch (compas) {
             case DOSPORCUATRO -> 2;
             case TRESPORCUATRO -> 3;
             case CUATROPORCUATRO -> 4;
             case SEISPOROCHO -> 6;
             default -> throw new IllegalArgumentException("Compas no válido: " + compas);
         };
-        return resultado;
     }
 }
