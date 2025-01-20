@@ -1,3 +1,5 @@
+"""Módulo para construir el proyecto con Antlr4."""
+
 import subprocess
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface

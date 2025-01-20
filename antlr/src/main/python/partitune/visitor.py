@@ -1,3 +1,4 @@
+"""Modulo para el visitor"""
 from typing import Optional
 from networkx import DiGraph
 from networkx.algorithms.cycles import simple_cycles
@@ -27,24 +28,33 @@ from .utils.errors import *
 
 
 class Visitor(ParserVisitor):
+    """Clase que implementa el visitor completo para Partitune"""
     def __init__(self, errores_anteriores: list[LexerError] = None):
+        """Constructor de la clase
+        
+        :param errores_anteriores: Lista de errores anteriores."""
         super().__init__()
+        # nos sirve recoger todos los posibles errores y lanzarlos al final
         self.errors: list[SemanticError | LexerError | ParserError] = errores_anteriores or []
         self.warnings: list[Warning] = []
 
     def _obtener_especificacion(
         self, ctx: Parser.ObraContext | Parser.FragmentoContext
     ) -> tuple[Optional[Clave], Optional[Compas], Optional[Armadura]]:
+        """Obtiene la especificación de la obra o fragmento"""
         especificacion: list[Clave | Compas | Armadura] = list(
             filter(
+                # eliminamos aquellas que hayan podido fallar
                 lambda x: x is not None,
                 map(
+                    # por cada especificación, la visitamos
                     lambda especificacion: self.visitEspecificacion(especificacion),
                     ctx.especificacion(),
                 ),
             )
         )
 
+        # filtramos las claves, compases y armaduras
         claves: list[Clave] = list(
             filter(lambda x: isinstance(x, Clave), especificacion)
         )
@@ -55,6 +65,7 @@ class Visitor(ParserVisitor):
             filter(lambda x: isinstance(x, Armadura), especificacion)
         )
 
+        # si hay más de una clave, compás o armadura, lanzamos una advertencia
         for clave in claves[1:]:
             self.warnings.append(
                 ClaveDuplicationWarning(
@@ -80,6 +91,7 @@ class Visitor(ParserVisitor):
                 )
             )
 
+        # obtenemos la última clave, compás y armadura si es que hay
         clave: Optional[Clave] = claves[-1] if claves else None
         compas: Optional[Compas] = compases[-1] if compases else None
         armadura: Optional[Armadura] = armaduras[-1] if armaduras else None
@@ -87,35 +99,48 @@ class Visitor(ParserVisitor):
         return clave, compas, armadura
 
     def _obtener_elementos(self, ctx: Parser.Bloque_notasContext | Parser.Error_repeticionContext | Parser.Error_ligaduraContext) -> list[Secuencia | FragmentoLlamado | Repeticion | Ligadura]:
+        """Obtiene los elementos de un bloque de notas o de algún posible nodo de error"""
         elementos = list(
             filter(
+                # eliminamos aquellas que hayan podido fallar
                 lambda e: e,
+                # por cada elemento, lo visitamos
                 map(lambda elemento: self.visitElemento(elemento), ctx.elemento()),
             )
         )
+        # si resulta que había una lista de estos elementos, la desempaquetamos
+        # esto viene de un nodo de error
         listas = list(filter(lambda e: isinstance(e, list), elementos))
         return elementos + [elemento for lista in listas for elemento in lista]
 
     def _check_call_graph(
         self, fragmentos: dict[str, FragmentoSemantico], obra: ObraSemantica
     ) -> None:
+        """Chequea el grafo de llamadas de los fragmentos en búsqueda de posibles errores"""
+        # crearemos un grafo dirigido
         grafo_llamadas: DiGraph = DiGraph()
+        # añadimos la obra como nodo
         grafo_llamadas.add_node(obra.nombre)
 
+        # añadimos cada fragmento como nodo
         for fragmento in fragmentos:
             grafo_llamadas.add_node(fragmento)
 
+        # añadimos las llamadas de la obra
         for llamada in filter(
             lambda elemento: isinstance(elemento, FragmentoLlamado), obra.bloque_notas
         ):
+            # comprobamos si existe el fragmento llamado
             if llamada.nombre.upper() not in fragmentos:
                 self.errors.append(
                     LlamadaNoDefinidaError(
                         llamada.linea, llamada.columna, llamada.nombre
                     )
                 )
+            # añadimos la llamada al grafo
             grafo_llamadas.add_edge(obra.nombre, llamada.nombre.upper())
 
+        # por cada fragmento, añadimos las llamadas
         for nombre, fragmento in fragmentos.items():
             for llamada in filter(
                 lambda elemento: isinstance(elemento, FragmentoLlamado),
@@ -129,11 +154,14 @@ class Visitor(ParserVisitor):
                     )
                 grafo_llamadas.add_edge(nombre, llamada.nombre.upper())
 
+        # comprobamos si hay ciclos
         for ciclo in simple_cycles(grafo_llamadas):
             self.errors.append(LlamadaCircularError(ciclo + [ciclo[0]]))
 
+        # comprobamos si hay fragmentos no usados
         fragmentos_usados = descendants(grafo_llamadas, obra.nombre)
 
+        # por cada fragmento, nos quedamos con aquellos que no han sido usados
         for nombre, fragmento in filter(
             lambda x: x[0] not in fragmentos_usados, fragmentos.items()
         ):
@@ -142,6 +170,7 @@ class Visitor(ParserVisitor):
             )
 
     def visitPartitura(self, ctx: Parser.PartituraContext) -> ObraFinal:
+        """Visita la partitura, cargando todos los datos correspondientes"""
         try:
             fragmentos: list[FragmentoSemantico] = list(
                 map(lambda fragmento: self.visitFragmento(fragmento), ctx.fragmento())
@@ -149,6 +178,7 @@ class Visitor(ParserVisitor):
 
             obra: ObraSemantica = self.visitObra(ctx.obra())
 
+            # por cada fragmento, comprobamos si hay duplicados
             for i, fragmento in enumerate(fragmentos):
                 for otro_fragmento in fragmentos[i + 1 :]:
                     if fragmento == otro_fragmento:
@@ -171,6 +201,7 @@ class Visitor(ParserVisitor):
         if self.errors:
             raise PartituneError(self.errors, self.warnings)
 
+        # convertimos las llamadas a fragmentos finales, haciendo que tengan todos los atributos
         for fragmento in dict_fragmentos.values():
             fragmento.bloque_notas = list(
                 map(
@@ -197,7 +228,10 @@ class Visitor(ParserVisitor):
         return obra
 
     def visitObra(self, ctx: Parser.ObraContext) -> ObraSemantica:
+        """Visita la obra, cargando todos los datos correspondientes y creando
+        la obra con los datos obtenidos"""
         if ctx.error_obra():
+            # en caso de haber obra, visitamos la obra
             return self.visitError_obra(ctx.error_obra())
         nombre: str = ctx.TITULO().getText()
 
@@ -212,6 +246,9 @@ class Visitor(ParserVisitor):
         )
 
     def visitError_obra(self, ctx:Parser.Error_obraContext) -> ObraSemantica:
+        """Visita la obra, cargando todos los datos correspondientes y creando
+        la obra con los datos obtenidos"""
+        # lanzamos un error genérico, indicando que se esperaba un ID o un TITULO
         self.errors.append(
             GenericParserError(
                 ctx.start.line,
@@ -250,22 +287,30 @@ class Visitor(ParserVisitor):
         return None
 
     def visitClave(self, ctx: Parser.ClaveContext) -> Clave | None:
+        """Visita la clave, obteniendo la clave correspondiente si no ha habido errores"""
         try:
             return get_clave_from_partitune(ctx.NOTA_BASE().getText())
         except ValueError as e:
+            # en caso de error, lanzamos un error de clave y devolvemos None
+            # esto es factible porque la clave es opcional
             self.errors.append(NotaClaveError(ctx.start.line, ctx.start.column, str(e)))
             return None
 
     def visitCompas(self, ctx: Parser.CompasContext) -> Compas:
+        """Visita el compás, obteniendo el compás correspondiente"""
+        # obtenemos el compás a partir del texto
         return get_compas_from_partitune(ctx.COMPAS_DURACION().getText())
 
     def visitArmadura(self, ctx: Parser.ArmaduraContext) -> Armadura | None:
+        """Visita la armadura, obteniendo la armadura correspondiente"""
+        # obtenemos la lista de notas con sus modificadores
         notas_armadura: list[tuple[ModificadorArmadura, NotaBase]] = list(
             map(
                 lambda nota_armadura: self.visitNota_armadura(nota_armadura),
                 ctx.nota_armadura(),
             )
         )
+        # comprobamos si hay bemoles y sostenidos
         hay_bemoles: bool = any(
             map(lambda x: x[0] == Modificador.BEMOL, notas_armadura)
         )
@@ -283,15 +328,17 @@ class Visitor(ParserVisitor):
         notas_base: list[NotaBase] = list(map(lambda x: x[1], notas_armadura))
 
         try:
+            # intentamos crear la armadura y devolverla
             return Armadura(
                 tipo_modificacion=(
-                    ModificadorArmadura.BEMOL
+                    ModificadorArmadura.BEMOL # asumimos que hay bemoles en caso de error
                     if hay_bemoles
                     else ModificadorArmadura.SOSTENIDO
                 ),
                 notas=notas_base,
             )
         except ValueError as e:
+            # si ha habido error de armadura, lanzamos un error y devolvemos None
             self.errors.append(
                 NotasArmaduraError(
                     ctx.nota_armadura(0).start.line,
@@ -304,9 +351,12 @@ class Visitor(ParserVisitor):
     def visitNota_armadura(
         self, ctx: Parser.Nota_armaduraContext
     ) -> tuple[ModificadorArmadura, NotaBase]:
+        """Visita la nota de la armadura, obteniendo el modificador y la nota base"""
+        # comprobamos el modificador
         modificador_armadura: ModificadorArmadura = (
             Modificador.BEMOL if ctx.BEMOL() else ModificadorArmadura.SOSTENIDO
         )
+        # obtenemos la nota base a partir del texto
         nota_base: NotaBase = get_nota_base_from_partitune(ctx.NOTA_BASE().getText())
 
         return modificador_armadura, nota_base
@@ -358,6 +408,7 @@ class Visitor(ParserVisitor):
     def visitBloque_notas(
         self, ctx: Parser.Bloque_notasContext
     ) -> list[Secuencia | FragmentoLlamado | Repeticion | Ligadura]:
+        """Visita el bloque de notas, obteniendo todos los elementos del bloque"""
         return self._obtener_elementos(ctx)
 
     def visitRepeticion(self, ctx: Parser.RepeticionContext) -> Repeticion | list[FragmentoLlamado]:
@@ -379,9 +430,18 @@ class Visitor(ParserVisitor):
         self.errors.append(
             RepeticionError(ctx.start.line, ctx.start.column, ctx.stop.line, ctx.stop.column, ctx)
         )
+        # estamos en un error, nos quedamos sólo con lo interesante, las llamadas
+        # aunque igualmente, visitamos todos los elementos para comprobar si hay errores
         return filter(lambda e: isinstance(e, FragmentoLlamado), self._obtener_elementos(ctx))
         
     def visitLigadura(self, ctx: Parser.LigaduraContext) -> Ligadura | None | list[FragmentoLlamado]:
+        """Visita la ligadura, obteniendo la ligadura correspondiente
+
+        :param ctx: Contexto de la ligadura
+
+        :return: Ligadura correspondiente en caso de éxito, None en caso de ligadura con silencios o con una nota,
+                 o una lista de llamadas en caso de tener elementos dentro
+        """
         if ctx.error_ligadura():
             return self.visitError_ligadura(ctx.error_ligadura())
         try:
@@ -440,6 +500,7 @@ class Visitor(ParserVisitor):
         duracion: Duracion = get_duracion_from_partitune(ctx.DURACION().getText())
         lista_notas: list[Nota | None] = list(
             map(
+                # no filtramos los none porque representan silencios
                 lambda posibles_notas: self.visitPosibles_notas(posibles_notas),
                 ctx.posibles_notas(),
             )
@@ -448,18 +509,30 @@ class Visitor(ParserVisitor):
         return Secuencia(duracion=duracion, lista_notas=lista_notas)
 
     def visitPosibles_notas(self, ctx: Parser.Posibles_notasContext) -> Nota | None:
+        """Visita las posibles notas, obteniendo la nota o silencio correspondiente
+        
+        :param ctx: Contexto de las posibles notas
+
+        :return: Nota correspondiente en caso de ser una nota, None en caso de ser un silencio
+        """
         return self.visitNota(ctx.nota()) if ctx.nota() else None
 
     def visitModificador(self, ctx: Parser.ModificadorContext) -> Modificador:
         return (
+            # la información del modificador la obtenemos a partir de los tokens
+            # sólo nos interesa el tipo de modificador, que están en diferentes tokens
             Modificador.BEMOL
             if ctx.BEMOL()
             else Modificador.SOSTENIDO if ctx.SOSTENIDO() else Modificador.BECUADRO
         )
 
     def visitNota(self, ctx: Parser.NotaContext) -> Nota | None:
+        """Visita la nota, obteniendo la nota correspondiente, visitamos todos los nodos
+        extrayendo la información necesaria"""
         if ctx.error_nota():
             return None
+        # la nota base tiene un atributo, que es el texto, y este nos interesa
+        # para obtener la nota base que sea
         nota_base: NotaBase = get_nota_base_from_partitune(ctx.NOTA_BASE().getText())
         modificador: Optional[Modificador] = (
             self.visitModificador(ctx.modificador()) if ctx.modificador() else None
@@ -469,6 +542,8 @@ class Visitor(ParserVisitor):
             if ctx.OCTAVA()
             else Octava.NORMAL
         )
+        # la información que nos aporta el puntillo, es si hay puntillo o no
+        # no tiene atributos
         puntillo: bool = ctx.PUNTILLO() is not None
 
         return Nota(

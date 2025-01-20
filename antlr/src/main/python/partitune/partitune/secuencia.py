@@ -1,3 +1,4 @@
+"""Modelo para la repersentación de secuencia de notas de una partitura."""
 from dataclasses import dataclass
 from enum import Enum
 
@@ -7,6 +8,7 @@ from .nota import Nota
 
 @dataclass
 class Secuencia:
+    """Modelo para la representación de una secuencia de notas de una partitura."""
     duracion: Duracion
     lista_notas: list[Nota | None]  # None es para silencios
 
