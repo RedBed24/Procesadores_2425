@@ -60,6 +60,7 @@ def generate_abc(input_file):
     """Genera el archivo ABC a partir de un archivo de entrada."""
     input_stream = FileStream(input_file, encoding="utf-8")
     lexer = Scanner(input_stream)
+    # Hace que los errores se muestren por el logger
     lexer.removeErrorListeners()
     scanner_error_listener = ParserErrorListener()
     lexer.addErrorListener(scanner_error_listener)
@@ -69,8 +70,10 @@ def generate_abc(input_file):
     parser_error_listener = ParserErrorListener()
     parser.addErrorListener(parser_error_listener)
 
+    # lee todos los tokens
     tokens.fill()
     errores_lexicos = scanner_error_listener.errors
+    # para todo token del canal de error
     for token in filter(lambda token: token.channel == Scanner.ERROR_CHANNEL, tokens.tokens):
         match token.type:
             case Scanner.TITULO_ERROR:
@@ -83,10 +86,13 @@ def generate_abc(input_file):
                 errores_lexicos.append(CaracterNoReconocidoError(token.line, token.column, token.text))
 
     try: 
+        # creamos el arbol de parseo
         parse_tree = parser.partitura()
         logger.debug(parse_tree.toStringTree(recog=parser))
 
+        # visitamos el arbol de parseo, con una lista de posibles errores para asegurar que no hay generación
         visitor = Visitor(errores_lexicos)
+        # excepción PartituneError si algún error es detectado
         obra = visitor.visit(parse_tree)
 
         if visitor.warnings:

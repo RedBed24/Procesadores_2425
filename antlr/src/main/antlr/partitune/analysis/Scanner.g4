@@ -4,6 +4,9 @@ options {
 	caseInsensitive = true;
 }
 
+/* 2 canales, el normal para producciones correctas y el de error para errores
+Lo que envías a un canal no se ve en otro canal
+Para reutilizar en otros lenguajes */
 channels {
     ERROR_CHANNEL
 }

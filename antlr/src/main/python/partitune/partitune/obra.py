@@ -1,3 +1,4 @@
+"""Módulo para la representación de las obras musicales."""
 from __future__ import annotations
 from typing import Optional
 
@@ -11,6 +12,7 @@ from .fragmento import FragmentoFinal, FragmentoLlamado
 
 
 class Obra:
+    """Clase común para la obra."""
     def __init__(
         self,
         nombre: str,
@@ -25,6 +27,8 @@ class Obra:
 
 
 class ObraSemantica(Obra):
+    """Clase para la representación de la obra semántica.
+    Las llamadas son representadas por un FragmentoLlamado."""
     def __init__(
         self,
         nombre: str,
@@ -38,6 +42,8 @@ class ObraSemantica(Obra):
 
 
 class ObraFinal(Obra):
+    """Clase para la representación de la obra final.
+    Las llamadas son representadas por un FragmentoFinal, que tiene todos los atributos"""
     def __init__(
         self,
         nombre: str,

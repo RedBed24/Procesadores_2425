@@ -1,3 +1,4 @@
+"""Módulo para la representación de los fragmentos musicales."""
 from __future__ import annotations
 from typing import Optional
 
@@ -10,6 +11,7 @@ from .ligadura import Ligadura
 
 
 class FragmentoSimple:
+    """Clase común para los fragmentos."""
     def __init__(
         self,
         nombre: str,
@@ -23,6 +25,7 @@ class FragmentoSimple:
 
 
 class Fragmento(FragmentoSimple):
+    """Clase común para los fragmentos con clave, armadura y compás."""
     def __init__(
         self,
         nombre: str,
@@ -37,6 +40,7 @@ class Fragmento(FragmentoSimple):
 
 
 class FragmentoLlamado(FragmentoSimple):
+    """Clase para la representación de un fragmento llamado. Lugar donde se llama a un fragmento."""
     def __init__(self, nombre: str, linea: int, columna: int):
         super().__init__(nombre)
         self.linea = linea
@@ -44,6 +48,7 @@ class FragmentoLlamado(FragmentoSimple):
 
 
 class FragmentoSemantico(Fragmento):
+    """Clase para la representación de los fragmentos semánticos. Contiene un bloque de notas con llamadas"""
     def __init__(
         self,
         nombre: str,
@@ -61,6 +66,8 @@ class FragmentoSemantico(Fragmento):
 
 
 class FragmentoFinal(Fragmento):
+    """Clase para la representación de los fragmentos finales. Contiene un bloque de notas con llamadas
+    que tienen todos los atributos"""
     def __init__(
         self,
         nombre: str,
