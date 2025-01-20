@@ -10,6 +10,9 @@ from .generacion import generar_abc
 
 
 from .utils.logger import logger
+from partitune.utils.parser_error_listener import ParserErrorListener
+from .utils.errors import PartituneError, TituloError, DuracionCompasError, ComentarioError, CaracterNoReconocidoError
+from .utils.error_messages import get_str_from_warning, get_str_from_error
 
 
 # Para visualización gráfica
@@ -57,19 +60,38 @@ def generate_abc(input_file):
     """Genera el archivo ABC a partir de un archivo de entrada."""
     input_stream = FileStream(input_file, encoding="utf-8")
     lexer = Scanner(input_stream)
+    lexer.removeErrorListeners()
+    scanner_error_listener = ParserErrorListener()
+    lexer.addErrorListener(scanner_error_listener)
     tokens = CommonTokenStream(lexer)
     parser = Parser(tokens)
-    visitor = Visitor()
+    parser.removeErrorListeners()
+    parser_error_listener = ParserErrorListener()
+    parser.addErrorListener(parser_error_listener)
+
+    tokens.fill()
+    errores_lexicos = scanner_error_listener.errors
+    for token in filter(lambda token: token.channel == Scanner.ERROR_CHANNEL, tokens.tokens):
+        match token.type:
+            case Scanner.TITULO_ERROR:
+                errores_lexicos.append(TituloError(token.line, token.column))
+            case Scanner.COMPAS_DURATION_ERROR:
+                errores_lexicos.append(DuracionCompasError(token.line, token.column, token.text))
+            case Scanner.BAD_COMMENT:
+                errores_lexicos.append(ComentarioError(token.line, token.column))
+            case Scanner.UNKNOWN:
+                errores_lexicos.append(CaracterNoReconocidoError(token.line, token.column, token.text))
 
     try: 
         parse_tree = parser.partitura()
         logger.debug(parse_tree.toStringTree(recog=parser))
 
+        visitor = Visitor(errores_lexicos)
         obra = visitor.visit(parse_tree)
 
         if visitor.warnings:
-            logger.warning("Advertencias:")
-            logger.warning("\n".join(visitor.warnings))
+            for warning in visitor.warnings:
+                logger.warning(get_str_from_warning(warning))
 
         abc_output = generar_abc(obra)
 
@@ -79,6 +101,11 @@ def generate_abc(input_file):
 
         logger.info(f"Archivo ABC generado: {output_file}")
 
+    except PartituneError as e:
+        for error in e.lista_errores:
+            logger.error(get_str_from_error(error))
+        for warning in e.lista_warnings:
+            logger.warning(get_str_from_warning(warning))
     except Exception as e:
         logger.error("Error en el archivo de entrada:")
         logger.error(e)

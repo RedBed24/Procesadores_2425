@@ -1,0 +1,17 @@
+fragment test 
+    error = 1
+    {
+    }
+
+bra "Titulo" {
+    clave = mismatch
+    {
+    }
+}
+
+obra "Titulo" {
+    clave = mismatch
+    {
+        n(sol)
+    }
+}

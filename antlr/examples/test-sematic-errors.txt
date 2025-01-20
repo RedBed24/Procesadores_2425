@@ -1,0 +1,24 @@
+fragmento duplicado { { n(do) } }
+fragmento duplicado { { n(re) } }
+
+fragmento recursivo { { recursivo } }
+
+fragmento recursionNivelA { { recursionNivelB } }
+fragmento recursionNivelB { { recursionNivelA } }
+
+obra "Semantica" {
+    armadura = b sol /* armadura con notas incorrectas */
+    armadura = b sol # si /* mezcla de sostenidos y bemoles */
+    armadura = B SI b MI /*b LA*/ b RE b SOL b DO /* armadura incorrecta */
+    armadura = b si /* armadura correcta */
+    clave = Si /* clave incorrecta */
+    {
+        noDeclarado
+        recursionNivelA
+        lig{ n(do) } /* ligadura incorrecta con sólo una nota */
+        lig{ n(do re) } /* ligadura valida */
+        lig{ n(do) n(re) } /* ligadura valida */
+        lig{ n(do -) } /* ligadura incorrecta con silencios */
+        lig{ n(do) n(-) } /* ligadura incorrecta con silencios */
+    }
+}
