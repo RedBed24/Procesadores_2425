@@ -6,7 +6,7 @@ class Clave(Enum):
     FA = "FA"
     DO = "DO"
 
-
+# Claves posibles en partituras
 def get_clave_from_partitune(clave: str) -> Clave:
     match clave.upper():
         case "SOL":

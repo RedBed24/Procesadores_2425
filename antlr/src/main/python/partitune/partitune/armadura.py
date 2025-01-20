@@ -14,6 +14,7 @@ class Armadura:
         self.cantidad_modificadores = validate_armadura(tipo_modificacion, notas)
 
 
+# Función que valida si las notas son correctas para una armadura dada un tipo de modificación
 def validate_armadura(
     tipo_modificacion: ModificadorArmadura, notas_a_validar: list[NotaBase]
 ) -> int:
@@ -39,7 +40,8 @@ def validate_armadura(
                 NotaBase.MI,
                 NotaBase.SI,
             ]
-
+            
+    # Si no se especifican notas, se lanza un error
     if not notas_a_validar:
         raise ValueError("No se han especificado notas para la armadura.")
 

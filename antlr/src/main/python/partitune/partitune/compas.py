@@ -7,7 +7,7 @@ class Compas(Enum):
     CUATROPORCUATRO = "4/4"
     SEISPOROCHO = "6/8"
 
-
+# Compases posibles en partituras
 def get_compas_from_partitune(compas: str) -> Compas:
     match compas.lower():
         case "2/4":

@@ -8,7 +8,7 @@ from .secuencia import Secuencia
 from .repeticion import Repeticion
 from .ligadura import Ligadura
 
-
+# clase base para los fragmentos
 class FragmentoSimple:
     def __init__(
         self,
@@ -22,6 +22,7 @@ class FragmentoSimple:
         return self.nombre.upper() == value.nombre.upper()
 
 
+# extiende FragmentoSimple con más atributos opcionales
 class Fragmento(FragmentoSimple):
     def __init__(
         self,
@@ -30,12 +31,13 @@ class Fragmento(FragmentoSimple):
         armadura: Optional[Armadura] = None,
         compas: Optional[Compas] = None,
     ):
-        super().__init__(nombre)
-        self.clave = clave
-        self.armadura = armadura
-        self.compas = compas
+        super().__init__(nombre)  # Inicializamos el nombre usando el constructor de la clase base
+        self.clave = clave  # Atributo opcional para la clave
+        self.armadura = armadura  # Atributo opcional para la armadura
+        self.compas = compas  # Atributo opcional para el compás
 
 
+# extiende FragmentoSimple y agrega atributos de posición
 class FragmentoLlamado(FragmentoSimple):
     def __init__(self, nombre: str, linea: int, columna: int):
         super().__init__(nombre)
@@ -43,6 +45,7 @@ class FragmentoLlamado(FragmentoSimple):
         self.columna = columna
 
 
+# extiende Fragmento e incluye un bloque de notas y ubicación
 class FragmentoSemantico(Fragmento):
     def __init__(
         self,
@@ -54,12 +57,12 @@ class FragmentoSemantico(Fragmento):
         armadura: Optional[Armadura] = None,
         compas: Optional[Compas] = None,
     ):
-        super().__init__(nombre, clave, armadura, compas)
-        self.bloque_notas = bloque_notas
-        self.linea = linea
-        self.columna = columna
+        super().__init__(nombre, clave, armadura, compas)  # Inicializa los atributos heredados de Fragmento
+        self.bloque_notas = bloque_notas  # Atributo que almacena las notas del fragmento
+        self.linea = linea  # La línea en la que se encuentra el fragmento semántico
+        self.columna = columna  # La columna en la que se encuentra el fragmento semántico
 
-
+# extiende Fragmento y tiene un bloque de notas
 class FragmentoFinal(Fragmento):
     def __init__(
         self,

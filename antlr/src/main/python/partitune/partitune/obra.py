@@ -9,7 +9,7 @@ from .repeticion import Repeticion
 from .ligadura import Ligadura
 from .fragmento import FragmentoFinal, FragmentoLlamado
 
-
+# Clase principal para las obras
 class Obra:
     def __init__(
         self,
@@ -23,7 +23,7 @@ class Obra:
         self.armadura = armadura
         self.compas = compas if compas else Compas.DOSPORCUATRO
 
-
+# clases que extienden Obra con un bloque de notas
 class ObraSemantica(Obra):
     def __init__(
         self,
@@ -36,7 +36,7 @@ class ObraSemantica(Obra):
         super().__init__(nombre, clave, armadura, compas)
         self.bloque_notas = bloque_notas
 
-
+# clase que extiende Obra con un bloque de notas final
 class ObraFinal(Obra):
     def __init__(
         self,

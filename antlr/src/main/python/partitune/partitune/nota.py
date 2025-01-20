@@ -4,7 +4,7 @@ from .octava import Octava
 from .modificador import Modificador
 from typing import Optional
 
-
+# Nota en partituras
 @dataclass
 class Nota:
     nota_base: NotaBase

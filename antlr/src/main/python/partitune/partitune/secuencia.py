@@ -4,7 +4,7 @@ from enum import Enum
 from .duracion import Duracion
 from .nota import Nota
 
-
+# Secuencia de notas
 @dataclass
 class Secuencia:
     duracion: Duracion

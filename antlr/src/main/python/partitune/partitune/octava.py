@@ -6,7 +6,7 @@ class Octava(Enum):
     NORMAL = 1
     AGUDO = 2
 
-
+# Octavas posibles en partituras
 def get_octava_from_partitune(octava: str) -> Octava:
     match octava:
         case "'":
