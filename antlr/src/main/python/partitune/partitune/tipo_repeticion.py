@@ -1,7 +1,7 @@
 """Modulo que contiene la enumeracion de los tipos de repeticion."""
 from enum import Enum
 
-
+# Tipo de repeticiones posibles en partituras
 class TipoRepeticion(Enum):
     """Enum para representar los tipos de repeticion en una partitura.
 

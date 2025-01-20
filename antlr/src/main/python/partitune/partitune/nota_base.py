@@ -10,7 +10,7 @@ class NotaBase(Enum):
     LA = "LA"
     SI = "SI"
 
-
+# Notas posibles en partituras
 def get_nota_base_from_partitune(nota_base: str) -> NotaBase:
     match nota_base.upper():
         case "DO":

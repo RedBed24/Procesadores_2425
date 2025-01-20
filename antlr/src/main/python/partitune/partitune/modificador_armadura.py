@@ -5,7 +5,7 @@ class ModificadorArmadura(Enum):
     SOSTENIDO = "#"
     BEMOL = "b"
 
-
+# Modificadores de armadura posibles en partituras sirve para modificar la tonalidad de la partitura
 def get_modificador_armadura_from_partitune(modificador: str) -> ModificadorArmadura:
     match modificador:
         case "#":

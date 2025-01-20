@@ -221,12 +221,14 @@ def _procesar_bloque(bloque_notas: list, context: tuple) -> str:
                 
     return " ".join(resultado)
 
+# Función que verifica si un elemento es una nota musical
 def _elemento_es_nota(elemento:str)->bool:
     notas = [
         "C", "D", "E", "F", "G", "A", "B", "Z"
     ]
     return any(n in elemento.upper() for n in notas)
 
+# Función que extrae y calcula el valor de la duración de una nota o silencio
 def _valor_duracion(elemento:str)->float:
     nums = re.findall(r'\d+', elemento)
     if not nums:
@@ -235,10 +237,16 @@ def _valor_duracion(elemento:str)->float:
     denominador = int(nums[1]) if len(nums) > 1 else 1
     return numerador/denominador
 
+# Función que genera los silencios en la notación ABC, dado un valor decimal
 def _generar_silencios(decimal):
+    # Convertimos el decimal en una fracción con denominador limitado a 32
     fraccion = Fraction(decimal).limit_denominator(32)
+
+    # Si la fracción tiene numerador 3 
     if fraccion.numerator == 3:
         return f"z{fraccion}"
+    
+    # Si el numerador es mayor que el denominador (representa múltiples silencios)
     if fraccion.numerator > fraccion.denominator:
         partes = []
         while fraccion.numerator > fraccion.denominator:
@@ -249,12 +257,14 @@ def _generar_silencios(decimal):
         return " ".join(partes)
     return f"z{fraccion}"
 
+# Función que genera las líneas divisorias en la notación ABC, respetando el compás de la obra
 def _generar_lineas_divisorias(abc_cuerpo:str, obra_compas:Compas)-> str:
-    pulsos = int(obra_compas.value.split("/")[0])
-    pulsos_restantes:float = pulsos
-    new_abc_cuerpo =''
+    pulsos = int(obra_compas.value.split("/")[0])  # Extraemos el número de pulsos por compás
+    pulsos_restantes: float = pulsos  # Inicializamos los pulsos restantes al total del compás
+    new_abc_cuerpo = ''  # Inicializamos el cuerpo de la notación ABC procesado
 
     for linea in abc_cuerpo.split("\n"):
+        # Si encontramos una línea con el compás, actualizamos los pulsos
         linea = linea.strip()
         if linea.startswith('M:'):
             pulsos =  int(linea.split(":")[1].split("/")[0])
@@ -263,13 +273,14 @@ def _generar_lineas_divisorias(abc_cuerpo:str, obra_compas:Compas)-> str:
         elif linea.startswith('K:'):
             new_abc_cuerpo += linea + "\n"
             pulsos_restantes = pulsos
+        # Si no es clave ni compás, procesamos cada elemento en la línea
         else:
-            for elemento in linea.split(" "): # es un bloque?
-                if not _elemento_es_nota(elemento):
-                    if elemento == '|:' or elemento == ':|':
-                        if pulsos_restantes != pulsos:
+            for elemento in linea.split(" "):  # Recorremos los elementos en la línea
+                if not _elemento_es_nota(elemento):  # Si el elemento no es una nota
+                    if elemento == '|:' or elemento == ':|':  # Si es un marcador de repetición
+                        if pulsos_restantes != pulsos:  # Si no se ha completado el compás, añadimos silencio
                             new_abc_cuerpo += f"{_generar_silencios(pulsos_restantes)} " 
-                            pulsos_restantes = pulsos
+                            pulsos_restantes = pulsos  # Restablecemos los pulsos restantes
                             new_abc_cuerpo += elemento + " "
                         else:
                             if elemento == '|:':
@@ -294,11 +305,8 @@ def _generar_lineas_divisorias(abc_cuerpo:str, obra_compas:Compas)-> str:
             new_abc_cuerpo += "\n"
     return new_abc_cuerpo
 
+# Función principal para generar el string en notación ABC a partir de una obra
 def generar_abc(obra: Obra) -> str:
-    """
-    Genera un string en notación ABC a partir de una instancia de Obra.
-    Incluye encabezado y cuerpo procesado con gestión contextual.
-    """
     # Construir las líneas de encabezado de la notación ABC.
     abc_lines = [
         "X:1",  # Número de referencia asigna 1

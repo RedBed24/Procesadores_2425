@@ -2,6 +2,7 @@
 from .secuencia import Secuencia
 
 
+# Ligadura de secuencias
 class Ligadura:
     """Representa una ligadura de una partitura."""
     def __init__(self, secuencias: list[Secuencia]):

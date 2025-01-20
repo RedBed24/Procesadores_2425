@@ -16,7 +16,7 @@ class Clave(Enum):
     FA = "FA"
     DO = "DO"
 
-
+# Claves posibles en partituras
 def get_clave_from_partitune(clave: str) -> Clave:
     """Obtiene la clave de una partitura a partir de su representación en Partitune.
     

@@ -10,7 +10,7 @@ from .repeticion import Repeticion
 from .ligadura import Ligadura
 from .fragmento import FragmentoFinal, FragmentoLlamado
 
-
+# Clase principal para las obras
 class Obra:
     """Clase común para la obra."""
     def __init__(
@@ -25,7 +25,7 @@ class Obra:
         self.armadura = armadura
         self.compas = compas if compas else Compas.DOSPORCUATRO
 
-
+# clases que extienden Obra con un bloque de notas
 class ObraSemantica(Obra):
     """Clase para la representación de la obra semántica.
     Las llamadas son representadas por un FragmentoLlamado."""
@@ -40,7 +40,7 @@ class ObraSemantica(Obra):
         super().__init__(nombre, clave, armadura, compas)
         self.bloque_notas = bloque_notas
 
-
+# clase que extiende Obra con un bloque de notas final
 class ObraFinal(Obra):
     """Clase para la representación de la obra final.
     Las llamadas son representadas por un FragmentoFinal, que tiene todos los atributos"""

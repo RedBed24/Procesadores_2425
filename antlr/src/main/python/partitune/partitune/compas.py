@@ -18,7 +18,7 @@ class Compas(Enum):
     CUATROPORCUATRO = "4/4"
     SEISPOROCHO = "6/8"
 
-
+# Compases posibles en partituras
 def get_compas_from_partitune(compas: str) -> Compas:
     """Obtiene el compás de una partitura a partir de su representación en Partitune.
     

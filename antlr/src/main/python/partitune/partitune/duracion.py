@@ -24,7 +24,7 @@ class Duracion(Enum):
     BLANCA = "BL"
     REDONDA = "R"
 
-
+# Duraciones posibles en partituras
 def get_duracion_from_partitune(duracion: str) -> Duracion:
     """Obtiene la duración de una nota a partir de su representación en Partitune.
     

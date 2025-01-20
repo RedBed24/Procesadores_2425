@@ -5,7 +5,7 @@ from enum import Enum
 from .duracion import Duracion
 from .nota import Nota
 
-
+# Secuencia de notas
 @dataclass
 class Secuencia:
     """Modelo para la representación de una secuencia de notas de una partitura."""
