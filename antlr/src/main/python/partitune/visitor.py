@@ -530,7 +530,8 @@ class Visitor(ParserVisitor):
         """Visita la nota, obteniendo la nota correspondiente, visitamos todos los nodos
         extrayendo la información necesaria"""
         if ctx.error_nota():
-            return None
+            print("Error en la nota")
+            return self.visitError_nota(ctx.error_nota())
         # la nota base tiene un atributo, que es el texto, y este nos interesa
         # para obtener la nota base que sea
         nota_base: NotaBase = get_nota_base_from_partitune(ctx.NOTA_BASE().getText())
@@ -552,3 +553,17 @@ class Visitor(ParserVisitor):
             octava=octava,
             puntillo=puntillo,
         )
+    
+    def visitError_nota(self, ctx:Parser.Error_notaContext) -> None:
+        self.errors.append(
+            GenericParserError(
+                ctx.start.line,
+                ctx.start.column,
+                Parser.RULE_nota,
+                Parser.ID,
+                ctx.ID().getText(),
+                [Parser.NOTA_BASE],
+                ctx,
+            )
+        )
+        return None
