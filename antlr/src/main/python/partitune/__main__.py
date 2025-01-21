@@ -58,6 +58,7 @@ def generate_tree(input_file):
 
 def generate_abc(input_file):
     """Genera el archivo ABC a partir de un archivo de entrada."""
+    open("partitune.log", "w").close()
     input_stream = FileStream(input_file, encoding="utf-8")
     lexer = Scanner(input_stream)
     # Hace que los errores se muestren por el logger
@@ -119,6 +120,7 @@ def generate_abc(input_file):
 
 def main():
     """Punto de entrada para los comandos partitune."""
+
     if len(sys.argv) != 3:
         logger.error("Uso: partitune <modo> <archivo>")
         logger.info(
