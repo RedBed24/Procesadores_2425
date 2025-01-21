@@ -91,7 +91,7 @@ def generate_abc(input_file):
         logger.debug(parse_tree.toStringTree(recog=parser))
 
         # visitamos el arbol de parseo, con una lista de posibles errores para asegurar que no hay generación
-        visitor = Visitor(errores_lexicos)
+        visitor = Visitor(errores_lexicos + parser_error_listener.errors)
         # excepción PartituneError si algún error es detectado
         obra = visitor.visit(parse_tree)
 
