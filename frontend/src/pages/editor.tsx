@@ -2,7 +2,7 @@ import { Container, Textarea, Title, Button, Divider, Group, Stack, Skeleton, Ac
 import { useState } from 'react';
 import React from 'react';
 import { AbcPlayer } from '../components/abcPlayer';
-import { Download, Eraser, Paperclip, SendHorizontal, Ban, TriangleAlert } from 'lucide-react';
+import { Download, Eraser, Paperclip, SendHorizontal, Ban, TriangleAlert, LightbulbIcon, Lightbulb } from 'lucide-react';
 import { UploadFile } from '../components/upload-file';
 import Editor from '@monaco-editor/react';
 
@@ -103,15 +103,54 @@ export const EditorPartitune: React.FC = () => {
               }}
             />
           </div>
-          <Group>
-            <Button mt='xl' size='md' onClick={handleSubmit} rightSection={<SendHorizontal />}>
+          <Group mt='xl' justify='center'>
+            <Button size='md' onClick={handleSubmit} rightSection={<SendHorizontal />}>
               Convertir
             </Button>
-            <Button mt='xl' size='md' onClick={() => { setMusicText(''); setIsSubmitted(false); setError(''); setWarnings('')}} rightSection={<Eraser />}>
+            <Button size='md' onClick={() => { setMusicText(''); setIsSubmitted(false); setError(''); setWarnings('')}} rightSection={<Eraser />}>
               Borrar
             </Button>
-            <Button mt='xl' size='md' onClick={() => { setUploadModalOpened(true); }} rightSection={<Paperclip />}>
+            <Button size='md' onClick={() => { setUploadModalOpened(true); }} rightSection={<Paperclip />}>
               Subir archivo
+            </Button>
+            <Button size='md' onClick={() => { setMusicText('obra "Titanic" {\n\
+    compas = 4/4\n\
+    clave = SOL\n\
+    {\n\
+        |:bl (fa)\n\
+        c (fa fa)\n\
+        n (fa mi)\n\
+        bl (fa)\n\
+        n (fa mi)\n\
+        bl (fa)\n\
+        n (sol)\n\
+        bl (la sol)\n\
+        bl (fa) \n\
+        c (fa fa)\n\
+        n (fa mi)\n\
+        bl (fa)\n\
+        n (fa)\n\
+        r (do) :|\n\
+        |: r (fa)\n\
+        bl (sol.)\n\
+        n (do)\n\
+        bl (do\')\n\
+        n (b si la)\n\
+        bl (sol)\n\
+        n (la b si)\n\
+        bl (la)\n\
+        n (sol fa mi)\n\
+        bl (fa)\n\
+        n (fa mi)\n\
+        bl (fa)\n\
+        n (sol)\n\
+        bl (la)\n\
+        bl (sol) :|\n\
+        r (do)\n\
+    }\n\
+}\n\
+              ') }} rightSection={<Lightbulb />}>
+              Ejemplo
             </Button>
           </Group>
         </Stack>
